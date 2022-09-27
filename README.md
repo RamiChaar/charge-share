@@ -4,8 +4,8 @@
 
 Rami Chaar
 Juanito Herrera
-Carlos SOlorzano
-
+Carlos Solorzano
+Alexander Ayvazov
 
 
 
