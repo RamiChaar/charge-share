@@ -43,3 +43,4 @@ obj/
 .gradle/buildOutputCleanup/buildOutputCleanup.lock
 .gradle/buildOutputCleanup/outputFiles.bin
 .gradle/file-system.probe
+local.properties
