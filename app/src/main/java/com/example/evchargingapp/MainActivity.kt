@@ -8,13 +8,15 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var binding: ActivityMainBinding
@@ -32,21 +34,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         val lat = 34.2407
-        val long = -118.5300
-        val initialLocation = LatLng(lat, long)
+        val lng = -118.5300
+        val initialLocation = LatLng(lat, lng)
         val zoomLevel = 12.0f;
 
         // Add a marker at CSUN and move the camera there
-        mMap.addMarker(MarkerOptions().position(initialLocation).title("Your Location").rotation(90.0F))
+        mMap.addMarker(MarkerOptions().position(initialLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)))
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialLocation, zoomLevel));
 
         //load stations in a two mile radius
-        loadNearestStations(lat, long, 2)
+        loadNearestStations(lat, lng, 2)
+        mMap.setOnMarkerClickListener(this)
     }
 
     private fun loadNearestStations(latitude: Double, longitude: Double, radius : Int) {
 
-        val url = "https://developer.nrel.gov/api/alt-fuel-stations/v1/nearest.json?api_key=atG74JTz1BziqwmY0hecm8a9J14qTnbUb5SOvjPs&latitude=$latitude&longitude=$longitude&radius=$radius&limit=all"
+        val url = "https://developer.nrel.gov/api/alt-fuel-stations/v1/nearest.json?api_key=atG74JTz1BziqwmY0hecm8a9J14qTnbUb5SOvjPs&fuel_type=ELEC&latitude=$latitude&longitude=$longitude&radius=$radius&limit=all"
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()
 
@@ -72,16 +75,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun loadMarkers(fuel_stations: List<Station>) {
+        var marker : Marker? = null
         for(station in fuel_stations) {
-            mMap.addMarker(
-                MarkerOptions().position(
-                    LatLng(
-                        station.latitude,
-                        station.longitude
-                    )
-                ).title(station.id.toString())
-            )
+            marker = mMap.addMarker(MarkerOptions().position(LatLng(station.latitude, station.longitude)).title(station.station_name))
+            marker?.tag = station.id
         }
+    }
+
+    override fun onMarkerClick(marker : Marker): Boolean {
+        val id = marker.tag as? Int
+        println(id)
+        marker.showInfoWindow()
+        return true
     }
 
 }

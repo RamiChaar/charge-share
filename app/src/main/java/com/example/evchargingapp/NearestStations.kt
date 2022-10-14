@@ -11,7 +11,14 @@ class NearestStations (var latitude : Double, var longitude : Double, var total_
 // v1/{id}.json?api_key={key}
 
 //get nearest stations, adjust radius(miles):
-// v1/nearest.json?api_key={key}&latitude={latitude}&longitude={longitude}&radius={radius}&limit=5
+// v1/nearest.json?api_key={key}&latitude={latitude}&longitude={longitude}&radius={radius}&limit=all
 
 //query all stations:
 // v1.json?api_key={key}
+
+//https://developer.nrel.gov/api/alt-fuel-stations/v1/nearest.json?api_key=atG74JTz1BziqwmY0hecm8a9J14qTnbUb5SOvjPs&fuel_type=ELEC&latitude=34.2407&longitude=-118.5300&radius=2&limit=all
+
+//for charging station availability:
+//https://api.tomtom.com/search/2/chargingAvailability.{ext}?key={Your_API_Key}&chargingAvailability={chargingAvailabilityId}
+
+
