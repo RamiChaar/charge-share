@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener, OnMap
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialLocation, zoomLevel));
 
         //load stations in a two mile radius
-        loadNearestStations(lat, lng, 2)
+        loadNearestStations(lat, lng, 20)
         mMap.setOnMarkerClickListener(this)
     }
 
@@ -79,12 +79,15 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener, OnMap
         for(station in fuel_stations) {
             marker = mMap.addMarker(MarkerOptions().position(LatLng(station.latitude, station.longitude)).title(station.station_name))
             marker?.tag = station.id
+            if(station.access_code == "public") {
+                marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+            }
         }
     }
 
     override fun onMarkerClick(marker : Marker): Boolean {
         val id = marker.tag as? Int
-        println(id)
+        println("Marker $id has been clicked on.")
         marker.showInfoWindow()
         return true
     }
