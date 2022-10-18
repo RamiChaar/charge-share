@@ -90,6 +90,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener, OnMap
         println("Marker $id has been clicked on.")
         marker.showInfoWindow()
         return true
+
     }
 
 }
