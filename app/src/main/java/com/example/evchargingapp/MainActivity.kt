@@ -1,17 +1,19 @@
 package com.example.evchargingapp
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.example.evchargingapp.databinding.ActivityMainBinding
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
@@ -35,15 +37,16 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener, OnMap
         mMap = googleMap
         val lat = 34.2407
         val lng = -118.5300
+        val searchRadius = 10
         val initialLocation = LatLng(lat, lng)
-        val zoomLevel = 12.0f;
+        val zoomLevel = 12.0f
 
         // Add a marker at CSUN and move the camera there
-        mMap.addMarker(MarkerOptions().position(initialLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)))
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialLocation, zoomLevel));
+        mMap.addMarker(MarkerOptions().position(initialLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)))
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialLocation, zoomLevel))
 
-        //load stations in a two mile radius
-        loadNearestStations(lat, lng, 20)
+        //load stations
+        loadNearestStations(lat, lng, searchRadius)
         mMap.setOnMarkerClickListener(this)
     }
 
@@ -75,12 +78,36 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener, OnMap
     }
 
     private fun loadMarkers(fuel_stations: List<Station>) {
-        var marker : Marker? = null
+        val defaultMarker = bitmapDescriptorFromVector(applicationContext, R.drawable.ic_resource_default_marker)
+        val inactiveMarker = bitmapDescriptorFromVector(applicationContext, R.drawable.ic_resource_inactive_marker)
+        val privateMarker = bitmapDescriptorFromVector(applicationContext, R.drawable.ic_resource_private_marker)
+        val levelOneMarker = bitmapDescriptorFromVector(applicationContext, R.drawable.ic_resource_level1_marker)
+        val levelTwoMarker = bitmapDescriptorFromVector(applicationContext, R.drawable.ic_resource_level2_marker)
+        val levelThreeMarker = bitmapDescriptorFromVector(applicationContext, R.drawable.ic_resource_level3_marker)
+
+        var marker : Marker?
         for(station in fuel_stations) {
             marker = mMap.addMarker(MarkerOptions().position(LatLng(station.latitude, station.longitude)).title(station.station_name))
             marker?.tag = station.id
-            if(station.access_code == "public") {
-                marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+            marker?.setIcon(defaultMarker)
+            if(station.status_code != "E") {
+                marker?.setIcon(inactiveMarker)
+                println("inactive")
+            } else if(station.access_code == "private") {
+                marker?.setIcon(privateMarker)
+                println("private")
+            } else if(station.ev_dc_fast_num > 0) {
+                marker?.setIcon(levelThreeMarker)
+                println("fast")
+            } else if(station.ev_level2_evse_num > 0) {
+                marker?.setIcon(levelTwoMarker)
+                println("medium")
+            } else if(station.ev_level1_evse_num > 0) {
+                marker?.setIcon(levelOneMarker)
+                println("slow")
+            } else {
+                marker?.setIcon(defaultMarker)
+                println("none")
             }
         }
     }
@@ -90,7 +117,15 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener, OnMap
         println("Marker $id has been clicked on.")
         marker.showInfoWindow()
         return true
+    }
 
+    private fun bitmapDescriptorFromVector(context : Context, vectorResId : Int): BitmapDescriptor {
+        val vectorDrawable : Drawable = ContextCompat.getDrawable(context, vectorResId)!!
+        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight())
+        val bitmap : Bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888)
+        val canvas : Canvas = Canvas(bitmap)
+        vectorDrawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
 }
