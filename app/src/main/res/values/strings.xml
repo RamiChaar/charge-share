@@ -2,4 +2,8 @@
     <string name="app_name">EV Charging App</string>
     <string name="title_activity">EV Charging App</string>
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyAW9q84AWKQkrxjRS1i97ImeuOAJ7ynPWY</string>
+    <string name="charger_levels">Charger Levels:</string>
+    <string name="connector_types">Connector Types:</string>
+    <string name="radius_of_search">Radius of Search:</string>
+    <string name="back">Back</string>
 </resources>

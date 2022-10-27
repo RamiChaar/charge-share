@@ -1,6 +1,6 @@
 package com.example.evchargingapp
 
-class NearestStations (var latitude : Double, var longitude : Double, var total_results : Int, val fuel_stations: List<Station>) {
+class NearestStations (var latitude : Double, var longitude : Double, var total_results : Int, val fuel_stations: List<Station>, var levelFilter : List<String>, var connectorFilter : List<String>) {
 
 }
 
@@ -17,6 +17,7 @@ class NearestStations (var latitude : Double, var longitude : Double, var total_
 // v1.json?api_key={key}
 
 //https://developer.nrel.gov/api/alt-fuel-stations/v1/nearest.json?api_key=atG74JTz1BziqwmY0hecm8a9J14qTnbUb5SOvjPs&fuel_type=ELEC&latitude=34.2407&longitude=-118.5300&radius=2&limit=all
+//https://developer.nrel.gov/docs/transportation/alt-fuel-stations-v1/
 
 //for charging station availability:
 //https://api.tomtom.com/search/2/chargingAvailability.{ext}?key={Your_API_Key}&chargingAvailability={chargingAvailabilityId}
