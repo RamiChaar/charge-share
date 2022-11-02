@@ -1,33 +1,258 @@
 package com.example.evchargingapp
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
+import android.content.res.Resources
 import android.os.Bundle
 import android.widget.Button
 import android.widget.SeekBar
-import android.widget.Switch
+import android.widget.SeekBar.OnSeekBarChangeListener
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
+
 
 class FilterActivity : AppCompatActivity() {
-
-//    private var radiusSlider = findViewById<SeekBar>(R.id.radiusBar)
-//    private var level1 = findViewById<Switch>(R.id.level1)
-//    private var level2 = findViewById<Switch>(R.id.level2)
-//    private var level3 = findViewById<Switch>(R.id.level3)
-//    private var J1772 = findViewById<Switch>(R.id.J1772)
-//    private var J1772COMBO = findViewById<Switch>(R.id.J1772COMBO)
-//    private var TESLA = findViewById<Switch>(R.id.TESLA)
-//    private var CHADEMO = findViewById<Switch>(R.id.CHADEMO)
-//    private var NEMA1450 = findViewById<Switch>(R.id.NEMA1450)
-//    private var NEMA515 = findViewById<Switch>(R.id.NEMA515)
-//    private var NEMA520 = findViewById<Switch>(R.id.NEMA520)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_filter)
+
         val backButton = findViewById<Button>(R.id.backButton)
+        val radiusSlider = findViewById<SeekBar>(R.id.radiusBar)
+        val radiusLabel = findViewById<TextView>(R.id.radiusTitle)
+        val level1 = findViewById<SwitchCompat>(R.id.level1)
+        val level2 = findViewById<SwitchCompat>(R.id.level2)
+        val level3 = findViewById<SwitchCompat>(R.id.level3)
+        val J1772 = findViewById<SwitchCompat>(R.id.J1772)
+        val J1772COMBO = findViewById<SwitchCompat>(R.id.J1772COMBO)
+        val TESLA = findViewById<SwitchCompat>(R.id.TESLA)
+        val CHADEMO = findViewById<SwitchCompat>(R.id.CHADEMO)
+        val NEMA1450 = findViewById<SwitchCompat>(R.id.NEMA1450)
+        val NEMA515 = findViewById<SwitchCompat>(R.id.NEMA515)
+        val NEMA520 = findViewById<SwitchCompat>(R.id.NEMA520)
+
+        val intent = intent
+        val allLevels = mutableListOf("ev_level1_evse_num", "ev_level2_evse_num", "ev_dc_fast_num")
+        val allConnectors = mutableListOf("J1772", "J1772COMBO", "TESLA", "CHADEMO", "NEMA1450", "NEMA515", "NEMA520")
+        val binaryLevels = intent.getStringExtra("levels")
+        val binaryConnectors = intent.getStringExtra("connectors")
+
+        var radius = intent.getDoubleExtra("radius", 4.0)
+        val res: Resources = resources
+        radiusLabel.text = res.getString(R.string.radius_of_search) + "   " + radius + res.getString(R.string.unit_for_radius)
+        radiusSlider.setProgress(((radius-1)*10).toInt())
+        radiusSlider.setMax(90)
+
+        radiusSlider.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+            }
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                radius = ((progress.toDouble() + 10)/10)
+                radiusLabel.text = res.getString(R.string.radius_of_search) + "   " + radius + res.getString(R.string.unit_for_radius)
+            }
+        })
+
+        val levels = mutableListOf<String>()
+        val connectors = mutableListOf<String>()
+
+        for(i in 0..2){
+            if(binaryLevels?.get(i)  == '1'){
+                levels.add(allLevels[i])
+            }
+        }
+        for(i in 0..6){
+            if(binaryConnectors?.get(i)  == '1'){
+                connectors.add(allConnectors[i])
+            }
+        }
+
+        if(levels.contains("ev_level1_evse_num")){
+            level1.isChecked = true
+        }
+        if(levels.contains("ev_level2_evse_num")){
+            level2.isChecked = true
+        }
+        if(levels.contains("ev_dc_fast_num")){
+            level3.isChecked = true
+        }
+
+        if(connectors.contains("J1772")){
+            J1772.isChecked = true
+        }
+        if(connectors.contains("J1772COMBO")){
+            J1772COMBO.isChecked = true
+        }
+        if(connectors.contains("TESLA")){
+            TESLA.isChecked = true
+        }
+        if(connectors.contains("CHADEMO")){
+            CHADEMO.isChecked = true
+        }
+        if(connectors.contains("NEMA1450")){
+            NEMA1450.isChecked = true
+        }
+        if(connectors.contains("NEMA515")){
+            NEMA515.isChecked = true
+        }
+        if(connectors.contains("NEMA520")){
+            NEMA520.isChecked = true
+        }
+
+        level1.setOnCheckedChangeListener { _, switchedOn ->
+            if (switchedOn) {
+                levels.add("ev_level1_evse_num")
+            }
+            else {
+                levels.remove("ev_level1_evse_num")
+            }
+        }
+        level2.setOnCheckedChangeListener { _, switchedOn ->
+            if (switchedOn) {
+                levels.add("ev_level2_evse_num")
+            }
+            else {
+                levels.remove("ev_level2_evse_num")
+            }
+        }
+        level3.setOnCheckedChangeListener { _, switchedOn ->
+            if (switchedOn) {
+                levels.add("ev_dc_fast_num")
+            }
+            else {
+                levels.remove("ev_dc_fast_num")
+            }
+        }
+
+        J1772.setOnCheckedChangeListener { _, switchedOn ->
+            if (switchedOn) {
+                connectors.add("J1772")
+            }
+            else {
+                connectors.remove("J1772")
+            }
+        }
+        J1772COMBO.setOnCheckedChangeListener { _, switchedOn ->
+            if (switchedOn) {
+                connectors.add("J1772COMBO")
+            }
+            else {
+                connectors.remove("J1772COMBO")
+            }
+        }
+        TESLA.setOnCheckedChangeListener { _, switchedOn ->
+            if (switchedOn) {
+                connectors.add("TESLA")
+            }
+            else {
+                connectors.remove("TESLA")
+            }
+        }
+        CHADEMO.setOnCheckedChangeListener { _, switchedOn ->
+            if (switchedOn) {
+                connectors.add("CHADEMO")
+            }
+            else {
+                connectors.remove("CHADEMO")
+            }
+        }
+        NEMA1450.setOnCheckedChangeListener { _, switchedOn ->
+            if (switchedOn) {
+                connectors.add("NEMA1450")
+            }
+            else {
+                connectors.remove("NEMA1450")
+            }
+        }
+        NEMA515.setOnCheckedChangeListener { _, switchedOn ->
+            if (switchedOn) {
+            }
+            else {
+                connectors.remove("NEMA515")
+            }
+        }
+        NEMA520.setOnCheckedChangeListener { _, switchedOn ->
+            if (switchedOn) {
+                connectors.add("NEMA520")
+            }
+            else {
+                connectors.remove("NEMA520")
+            }
+        }
+
         backButton.setOnClickListener{
+            val returnIntent = Intent()
+            val binaryLevelsReturn = getBinaryLevels(levels)
+            val binaryConnectorsReturn = getBinaryConnectors(connectors)
+            returnIntent.putExtra("levels", binaryLevelsReturn)
+            returnIntent.putExtra("connectors", binaryConnectorsReturn)
+            returnIntent.putExtra("radius", radius)
+            setResult(1, returnIntent)
             finish()
         }
+    }
+
+    private fun getBinaryLevels(levels: MutableList<String>): String {
+        var binaryLevels = ""
+        if(levels.contains("ev_level1_evse_num")) {
+            binaryLevels += '1'
+        } else {
+            binaryLevels += '0'
+        }
+        if(levels.contains("ev_level2_evse_num")) {
+            binaryLevels += '1'
+        } else {
+            binaryLevels += '0'
+        }
+        if(levels.contains("ev_dc_fast_num")) {
+            binaryLevels += '1'
+        } else {
+            binaryLevels += '0'
+        }
+        return binaryLevels
+    }
+
+    private fun getBinaryConnectors(connectors: MutableList<String>): String {
+        var binaryConnectors = ""
+
+        if(connectors.contains("J1772")) {
+            binaryConnectors += '1'
+        } else {
+            binaryConnectors += '0'
+        }
+        if(connectors.contains("J1772COMBO")) {
+            binaryConnectors += '1'
+        } else {
+            binaryConnectors += '0'
+        }
+        if(connectors.contains("TESLA")) {
+            binaryConnectors += '1'
+        } else {
+            binaryConnectors += '0'
+        }
+        if(connectors.contains("CHADEMO")) {
+            binaryConnectors += '1'
+        } else {
+            binaryConnectors += '0'
+        }
+        if(connectors.contains("NEMA1450")) {
+            binaryConnectors += '1'
+        } else {
+            binaryConnectors += '0'
+        }
+        if(connectors.contains("NEMA515")) {
+            binaryConnectors += '1'
+        } else {
+            binaryConnectors += '0'
+        }
+        if(connectors.contains("NEMA520")) {
+            binaryConnectors += '1'
+        } else {
+            binaryConnectors += '0'
+        }
+        return binaryConnectors
     }
 
     override fun finish() {

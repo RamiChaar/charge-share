@@ -5,5 +5,16 @@
     <string name="charger_levels">Charger Levels:</string>
     <string name="connector_types">Connector Types:</string>
     <string name="radius_of_search">Radius of Search:</string>
+    <string name="unit_for_radius">mi</string>
     <string name="back">Back</string>
+    <string name="level_1">Level 1</string>
+    <string name="level_2">Level 2</string>
+    <string name="fast_level_3">Fast (Level 3)</string>
+    <string name="ev_plug_j1772">EV Plug (J1772)</string>
+    <string name="css_j1772combo">CSS (J1772COMBO)</string>
+    <string name="tesla">Tesla</string>
+    <string name="chademo">CHAdeMO</string>
+    <string name="nema_14_50">NEMA 14-50</string>
+    <string name="nema_5_15">NEMA 5-15</string>
+    <string name="nema_5_20">NEMA 5-20</string>
 </resources>

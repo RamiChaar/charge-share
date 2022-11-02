@@ -55,33 +55,33 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginStart="16dp"/>
 
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/level1"
         android:layout_width="fill_parent"
         android:layout_height="48dp"
-        android:text="Level 1"
+        android:text="@string/level_1"
         app:layout_constraintTop_toBottomOf="@+id/levelsTitle"
         app:layout_constraintBottom_toTopOf="@+id/level2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="parent"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/level2"
         android:layout_width="fill_parent"
         android:layout_height="48dp"
-        android:text="Level 2"
+        android:text="@string/level_2"
         app:layout_constraintTop_toBottomOf="@+id/level1"
         app:layout_constraintBottom_toTopOf="@+id/level3"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/level3"
         android:layout_width="fill_parent"
         android:layout_height="48dp"
-        android:text="Fast (Level 3)"
+        android:text="@string/fast_level_3"
         app:layout_constraintTop_toBottomOf="@+id/level2"
         app:layout_constraintBottom_toTopOf="@+id/connectorsTitle"
         app:layout_constraintStart_toStartOf="parent"
@@ -101,77 +101,77 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"/>
 
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/J1772"
         android:layout_width="fill_parent"
         android:layout_height="48dp"
-        android:text="EV Plug (J1772)"
+        android:text="@string/ev_plug_j1772"
         app:layout_constraintTop_toBottomOf="@+id/connectorsTitle"
         app:layout_constraintBottom_toTopOf="@+id/J1772COMBO"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="parent"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/J1772COMBO"
         android:layout_width="fill_parent"
         android:layout_height="48dp"
-        android:text="CSS (J1772COMBO)"
+        android:text="@string/css_j1772combo"
         app:layout_constraintTop_toBottomOf="@+id/J1772"
         app:layout_constraintBottom_toTopOf="@+id/TESLA"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="parent"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/TESLA"
         android:layout_width="fill_parent"
         android:layout_height="48dp"
-        android:text="Tesla"
+        android:text="@string/tesla"
         app:layout_constraintTop_toBottomOf="@+id/J1772COMBO"
         app:layout_constraintBottom_toTopOf="@+id/CHADEMO"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="parent"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/CHADEMO"
         android:layout_width="fill_parent"
         android:layout_height="48dp"
-        android:text="CHAdeMO"
+        android:text="@string/chademo"
         app:layout_constraintTop_toBottomOf="@+id/TESLA"
         app:layout_constraintBottom_toTopOf="@+id/NEMA1450"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="parent"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/NEMA1450"
         android:layout_width="fill_parent"
         android:layout_height="48dp"
-        android:text="NEMA 14-50"
+        android:text="@string/nema_14_50"
         app:layout_constraintTop_toBottomOf="@+id/CHADEMO"
         app:layout_constraintBottom_toTopOf="@+id/NEMA515"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="parent"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/NEMA515"
         android:layout_width="fill_parent"
         android:layout_height="48dp"
-        android:text="NEMA 5-15"
+        android:text="@string/nema_5_15"
         app:layout_constraintTop_toBottomOf="@+id/NEMA1450"
         app:layout_constraintBottom_toTopOf="@+id/NEMA520"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="parent"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/NEMA520"
         android:layout_width="fill_parent"
         android:layout_height="48dp"
-        android:text="NEMA 5-20"
+        android:text="@string/nema_5_20"
         app:layout_constraintTop_toBottomOf="@+id/NEMA515"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
