@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">EV Charging App</string>
+    <string name="title_map">Map</string>
+    <string name="title_profile">Profile</string>
     <string name="title_activity">EV Charging App</string>
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyAW9q84AWKQkrxjRS1i97ImeuOAJ7ynPWY</string>
     <string name="charger_levels">Charger Levels:</string>
@@ -17,4 +19,6 @@
     <string name="nema_14_50">NEMA 14-50</string>
     <string name="nema_5_15">NEMA 5-15</string>
     <string name="nema_5_20">NEMA 5-20</string>
+    <string name="map">Map</string>
+    <string name="profile">Profile</string>
 </resources>
