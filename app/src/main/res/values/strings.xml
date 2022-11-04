@@ -21,4 +21,6 @@
     <string name="nema_5_20">NEMA 5-20</string>
     <string name="map">Map</string>
     <string name="profile">Profile</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

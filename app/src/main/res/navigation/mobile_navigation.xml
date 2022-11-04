@@ -7,13 +7,13 @@
 
     <fragment
         android:id="@+id/navigation_map"
-        android:name="com.example.androidnavigation.ui.map.mapFragment"
+        android:name="com.example.evchargingapp.ui.map.MapsFragment"
         android:label="@string/title_map"
-        tools:layout="@layout/fragment_map" />
+        tools:layout="@layout/fragment_maps" />
 
     <fragment
         android:id="@+id/navigation_profile"
-        android:name="com.example.androidnavigation.ui.profile.profileFragment"
+        android:name="com.example.evchargingapp.ui.profile.ProfileFragment"
         android:label="@string/title_profile"
         tools:layout="@layout/fragment_profile" />
 
