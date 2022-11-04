@@ -71,6 +71,8 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener, OnMap
         if(mapReady){
             Log.e("MainActivity", "resume")
             googleMap.clear()
+            googleMap.addMarker(MarkerOptions().position(defaultLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)))
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, zoomLevel))
             loadNearestStations(defaultLat, defaultLng, searchRadius, levels, connectors)
         }
     }
