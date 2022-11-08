@@ -1,31 +1,32 @@
 package com.example.evchargingapp.ui.map
 
-import androidx.fragment.app.Fragment
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.provider.Settings.System.getConfiguration
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import com.example.evchargingapp.FilterActivity
+import com.example.evchargingapp.NearestStations
 import com.example.evchargingapp.R
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import android.content.Context
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.Drawable
-import android.util.Log
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
-import com.example.evchargingapp.FilterActivity
-import com.example.evchargingapp.NearestStations
 import com.google.android.gms.maps.model.*
 import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
+
 
 class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
 
@@ -43,10 +44,18 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
     private val allConnectors = mutableListOf("J1772", "J1772COMBO", "TESLA", "CHADEMO", "NEMA1450", "NEMA515", "NEMA520")
     private var levels = mutableListOf("ev_level1_evse_num", "ev_level2_evse_num", "ev_dc_fast_num")
     private var connectors = mutableListOf("J1772", "J1772COMBO", "TESLA", "CHADEMO", "NEMA1450", "NEMA515", "NEMA520")
+    private var showPrivate = true
+    private var showInactive = true
 
     private val callback = OnMapReadyCallback { googleMap ->
         this.googleMap = googleMap
         mapReady = true
+
+        val style = context?.let { MapStyleOptions.loadRawResourceStyle(it, R.raw.map_dark_theme) }
+        if (context?.resources?.configuration?.uiMode == 33) {
+            googleMap.setMapStyle(style)
+        }
+
         Log.i("MapsFragment", "onMapReadyCallback")
         // Add a marker at CSUN and move the camera there
         googleMap.addMarker(MarkerOptions().position(defaultLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)))
@@ -55,6 +64,17 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
         loadNearestStations(defaultLat, defaultLng, searchRadius, levels, connectors)
         googleMap.setOnMarkerClickListener(this)
     }
+
+//    override fun onConfigurationChanged(newConfig: Configuration) {
+//        super.onConfigurationChanged(newConfig)
+//
+//        val currentSystemMode = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+//
+//        when (currentNightMode) {
+//            Configuration.UI_MODE_NIGHT_NO -> // Night mode is not active
+//             Configuration.UI_MODE_NIGHT_YES -> // Night mode is active
+//        }
+//    }
 
     override fun onResume() {
         super.onResume()
@@ -98,12 +118,12 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
     }
 
     private fun loadMarkers(nearestStations: NearestStations) {
-        val defaultMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_default_marker) }
-        val inactiveMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_inactive_marker) }
-        val privateMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_private_marker) }
-        val levelOneMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level1_marker) }
-        val levelTwoMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level2_marker) }
-        val levelThreeMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level3_marker) }
+        val defaultMarker = context?.let { bitmapDescriptorFromVector(it, com.example.evchargingapp.R.drawable.ic_resource_default_marker) }
+        val inactiveMarker = context?.let { bitmapDescriptorFromVector(it, com.example.evchargingapp.R.drawable.ic_resource_inactive_marker) }
+        val privateMarker = context?.let { bitmapDescriptorFromVector(it, com.example.evchargingapp.R.drawable.ic_resource_private_marker) }
+        val levelOneMarker = context?.let { bitmapDescriptorFromVector(it, com.example.evchargingapp.R.drawable.ic_resource_level1_marker) }
+        val levelTwoMarker = context?.let { bitmapDescriptorFromVector(it, com.example.evchargingapp.R.drawable.ic_resource_level2_marker) }
+        val levelThreeMarker = context?.let { bitmapDescriptorFromVector(it, com.example.evchargingapp.R.drawable.ic_resource_level3_marker) }
 
         var marker : Marker?
         for(station in nearestStations.fuel_stations) {
@@ -132,6 +152,14 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
             }
 
             if(!hasOneLevel || !hasOneConnector){
+                continue
+            }
+
+            if(!showPrivate && station.access_code == "private"){
+                continue
+            }
+
+            if(!showInactive && station.status_code != "E"){
                 continue
             }
 
@@ -220,7 +248,8 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
         val intent = Intent(context, FilterActivity::class.java)
         intent.putExtra("levels", binaryLevels)
         intent.putExtra("connectors", binaryConnectors)
-        intent.putExtra("radius", searchRadius)
+        intent.putExtra("private", showPrivate)
+        intent.putExtra("inactive", showInactive)
         resultLauncher.launch(intent)
         //overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
     }
@@ -231,7 +260,9 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
             val data: Intent? = result.data
             val binaryLevels = data?.getStringExtra("levels")
             val binaryConnectors = data?.getStringExtra("connectors")
-            val newRadius = data?.getDoubleExtra("radius", 4.0)
+
+            showPrivate = data?.getBooleanExtra("private", true) == true
+            showInactive = data?.getBooleanExtra("inactive", true) == true
 
             levels.clear()
             connectors.clear()
@@ -241,14 +272,10 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
                     levels.add(allLevels[i])
                 }
             }
-            for(i in 0..6){
-                if(binaryConnectors?.get(i)  == '1'){
+            for(i in 0..6) {
+                if (binaryConnectors?.get(i) == '1') {
                     connectors.add(allConnectors[i])
                 }
-            }
-
-            if (newRadius != null) {
-                searchRadius = newRadius
             }
         }
     }
@@ -266,13 +293,13 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.i("MapsFragment", "onCreateView")
-        return inflater.inflate(R.layout.fragment_maps, container, false)
+        return inflater.inflate(com.example.evchargingapp.R.layout.fragment_maps, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.i("MapsFragment", "onViewCreated")
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+        val mapFragment = childFragmentManager.findFragmentById(com.example.evchargingapp.R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
     }
 }
