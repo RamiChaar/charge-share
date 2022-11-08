@@ -19,8 +19,8 @@ class FilterActivity : AppCompatActivity() {
         setContentView(R.layout.activity_filter)
 
         val backButton = findViewById<Button>(R.id.backButton)
-        val radiusSlider = findViewById<SeekBar>(R.id.radiusBar)
-        val radiusLabel = findViewById<TextView>(R.id.radiusTitle)
+        val private = findViewById<SwitchCompat>(R.id.showPrivate)
+        val inactive = findViewById<SwitchCompat>(R.id.showInactive)
         val level1 = findViewById<SwitchCompat>(R.id.level1)
         val level2 = findViewById<SwitchCompat>(R.id.level2)
         val level3 = findViewById<SwitchCompat>(R.id.level3)
@@ -37,23 +37,8 @@ class FilterActivity : AppCompatActivity() {
         val allConnectors = mutableListOf("J1772", "J1772COMBO", "TESLA", "CHADEMO", "NEMA1450", "NEMA515", "NEMA520")
         val binaryLevels = intent.getStringExtra("levels")
         val binaryConnectors = intent.getStringExtra("connectors")
-
-        var radius = intent.getDoubleExtra("radius", 4.0)
-        val res: Resources = resources
-        radiusLabel.text = res.getString(R.string.radius_of_search) + "   " + radius + res.getString(R.string.unit_for_radius)
-        radiusSlider.setProgress(((radius-1)*10).toInt())
-        radiusSlider.setMax(90)
-
-        radiusSlider.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar) {
-            }
-            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                radius = ((progress.toDouble() + 10)/10)
-                radiusLabel.text = res.getString(R.string.radius_of_search) + "   " + radius + res.getString(R.string.unit_for_radius)
-            }
-        })
+        var showPrivate = intent.getBooleanExtra("private", true)
+        var showInactive = intent.getBooleanExtra("inactive", true)
 
         val levels = mutableListOf<String>()
         val connectors = mutableListOf<String>()
@@ -67,6 +52,13 @@ class FilterActivity : AppCompatActivity() {
             if(binaryConnectors?.get(i)  == '1'){
                 connectors.add(allConnectors[i])
             }
+        }
+
+        if(showPrivate){
+            private.isChecked = true
+        }
+        if(showInactive){
+            inactive.isChecked = true
         }
 
         if(levels.contains("ev_level1_evse_num")){
@@ -99,6 +91,14 @@ class FilterActivity : AppCompatActivity() {
         }
         if(connectors.contains("NEMA520")){
             NEMA520.isChecked = true
+        }
+
+        private.setOnCheckedChangeListener { _, switchedOn ->
+            showPrivate = switchedOn
+        }
+
+        inactive.setOnCheckedChangeListener { _, switchedOn ->
+            showInactive = switchedOn
         }
 
         level1.setOnCheckedChangeListener { _, switchedOn ->
@@ -188,7 +188,8 @@ class FilterActivity : AppCompatActivity() {
             val binaryConnectorsReturn = getBinaryConnectors(connectors)
             returnIntent.putExtra("levels", binaryLevelsReturn)
             returnIntent.putExtra("connectors", binaryConnectorsReturn)
-            returnIntent.putExtra("radius", radius)
+            returnIntent.putExtra("private", showPrivate)
+            returnIntent.putExtra("inactive", showInactive)
             setResult(1, returnIntent)
             finish()
         }
