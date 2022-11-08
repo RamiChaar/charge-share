@@ -105,16 +105,18 @@
         app:layout_constraintTop_toBottomOf="@+id/btnlogin">
 
         <TextView
+            android:id="@+id/TextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Don't have an Account?"
-            android:textColor="@color/white"/>
+            android:textColor="@color/white" />
 
         <TextView
+            android:id="@+id/textViewSignUp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="SignUp"
-            android:textColor="@color/design_default_color_error"/>
+            android:textColor="@color/design_default_color_error" />
     </LinearLayout>
 
 
