@@ -2,12 +2,10 @@ package com.example.evchargingapp.ui.map
 
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.provider.Settings.System.getConfiguration
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +16,7 @@ import androidx.fragment.app.Fragment
 import com.example.evchargingapp.FilterActivity
 import com.example.evchargingapp.NearestStations
 import com.example.evchargingapp.R
+import com.example.evchargingapp.Station
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -26,6 +25,8 @@ import com.google.android.gms.maps.model.*
 import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
+import kotlin.math.min
+import kotlin.math.pow
 
 
 class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
@@ -35,11 +36,12 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
     private var mapReady = false
     private val defaultLat = 34.2407
     private val defaultLng = -118.5300
-    private val defaultLocation = LatLng(defaultLat, defaultLng)
-    private val zoomLevel = 12.0f
+    private var setLocation = LatLng(defaultLat, defaultLng)
+    private var setZoomLevel = 12.0f
 
     private var searchRadius = 4.0
 
+    private val loadedStations = mutableListOf<Station>()
     private val allLevels = mutableListOf("ev_level1_evse_num", "ev_level2_evse_num", "ev_dc_fast_num")
     private val allConnectors = mutableListOf("J1772", "J1772COMBO", "TESLA", "CHADEMO", "NEMA1450", "NEMA515", "NEMA520")
     private var levels = mutableListOf("ev_level1_evse_num", "ev_level2_evse_num", "ev_dc_fast_num")
@@ -48,6 +50,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
     private var showInactive = true
 
     private val callback = OnMapReadyCallback { googleMap ->
+        Log.i("MapsFragment", "onMapReadyCallback")
         this.googleMap = googleMap
         mapReady = true
 
@@ -56,38 +59,37 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
             googleMap.setMapStyle(style)
         }
 
-        Log.i("MapsFragment", "onMapReadyCallback")
-        // Add a marker at CSUN and move the camera there
-        googleMap.addMarker(MarkerOptions().position(defaultLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)))
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, zoomLevel))
-        //load stations
-        loadNearestStations(defaultLat, defaultLng, searchRadius, levels, connectors)
-        googleMap.setOnMarkerClickListener(this)
-    }
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(setLocation, setZoomLevel))
 
-//    override fun onConfigurationChanged(newConfig: Configuration) {
-//        super.onConfigurationChanged(newConfig)
-//
-//        val currentSystemMode = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
-//
-//        when (currentNightMode) {
-//            Configuration.UI_MODE_NIGHT_NO -> // Night mode is not active
-//             Configuration.UI_MODE_NIGHT_YES -> // Night mode is active
-//        }
-//    }
+        //load stations
+        loadNearestStations(setLocation, searchRadius)
+        googleMap.setOnMarkerClickListener(this)
+
+        googleMap.setOnCameraIdleListener {
+            val center = googleMap.cameraPosition.target
+            val zoom = googleMap.cameraPosition.zoom
+            searchRadius = min(16.0, 2.0.pow((14.5 - zoom)))
+            loadNearestStations(center, searchRadius)
+
+            Log.i("camera moved to: ", center.toString())
+            Log.i("search radius: ", searchRadius.toString())
+        }
+    }
 
     override fun onResume() {
         super.onResume()
         if(mapReady){
             Log.i("MapsFragment", "onResume")
             googleMap.clear()
-            googleMap.addMarker(MarkerOptions().position(defaultLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)))
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, zoomLevel))
-            loadNearestStations(defaultLat, defaultLng, searchRadius, levels, connectors)
+            loadedStations.clear()
+            addCurrentLocation()
+            loadNearestStations(googleMap.cameraPosition.target, searchRadius)
         }
     }
 
-    private fun loadNearestStations(latitude: Double, longitude: Double, radius: Double, levels: MutableList<String>, connectors: MutableList<String>) {
+    private fun loadNearestStations(location: LatLng, radius: Double) {
+        val latitude = location.latitude
+        val longitude = location.longitude
         val url = "https://developer.nrel.gov/api/alt-fuel-stations/v1/nearest.json?api_key=atG74JTz1BziqwmY0hecm8a9J14qTnbUb5SOvjPs&fuel_type=ELEC&latitude=$latitude&longitude=$longitude&radius=$radius&limit=all"
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()
@@ -99,15 +101,11 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
                 //retrieve json body and use gson to create nearest station object
                 val body = response.body?.string()
                 val gson = GsonBuilder().create()
-                val nearestStations = gson.fromJson(body, NearestStations::class.java)
-
-                //add the filters to the object
-                nearestStations.levelFilter = levels
-                nearestStations.connectorFilter = connectors
+                val newNearestStations = gson.fromJson(body, NearestStations::class.java)
 
                 //load markers on the main thread
                 activity?.runOnUiThread {
-                    loadMarkers(nearestStations)
+                    loadMarkers(newNearestStations)
                 }
 
             }
@@ -117,16 +115,26 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
         })
     }
 
-    private fun loadMarkers(nearestStations: NearestStations) {
-        val defaultMarker = context?.let { bitmapDescriptorFromVector(it, com.example.evchargingapp.R.drawable.ic_resource_default_marker) }
-        val inactiveMarker = context?.let { bitmapDescriptorFromVector(it, com.example.evchargingapp.R.drawable.ic_resource_inactive_marker) }
-        val privateMarker = context?.let { bitmapDescriptorFromVector(it, com.example.evchargingapp.R.drawable.ic_resource_private_marker) }
-        val levelOneMarker = context?.let { bitmapDescriptorFromVector(it, com.example.evchargingapp.R.drawable.ic_resource_level1_marker) }
-        val levelTwoMarker = context?.let { bitmapDescriptorFromVector(it, com.example.evchargingapp.R.drawable.ic_resource_level2_marker) }
-        val levelThreeMarker = context?.let { bitmapDescriptorFromVector(it, com.example.evchargingapp.R.drawable.ic_resource_level3_marker) }
+    private fun loadMarkers(newNearestStations: NearestStations) {
+        val defaultMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_default_marker) }
+        val inactiveMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_inactive_marker) }
+        val privateMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_private_marker) }
+        val levelOneMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level1_marker) }
+        val levelTwoMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level2_marker) }
+        val levelThreeMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level3_marker) }
+
+        val currIds = mutableListOf<Int>()
+        loadedStations.forEach { station ->
+            currIds.add(station.id)
+        }
 
         var marker : Marker?
-        for(station in nearestStations.fuel_stations) {
+        for(station in newNearestStations.fuel_stations) {
+            if(currIds.contains(station.id)){
+                continue
+            }
+            loadedStations.add(station)
+
             var hasOneLevel = false
             var hasOneConnector = false
             val levelsInStation = mutableListOf("")
@@ -141,13 +149,18 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
             }
 
             for(level in levelsInStation){
-                if(nearestStations.levelFilter.contains(level)) {
+                if(levels.contains(level)) {
                     hasOneLevel = true
                 }
             }
-            for(connector in station.ev_connector_types){
-                if(nearestStations.connectorFilter.contains(connector)) {
-                    hasOneConnector = true
+
+            if(station.ev_connector_types == null) {
+                hasOneConnector = true
+            } else {
+                for (connector in station.ev_connector_types) {
+                    if (connectors.contains(connector)) {
+                        hasOneConnector = true
+                    }
                 }
             }
 
@@ -180,6 +193,10 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
                 marker?.setIcon(defaultMarker)
             }
         }
+    }
+
+    private fun addCurrentLocation() {
+        googleMap.addMarker(MarkerOptions().position(setLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)))
     }
 
     override fun onMarkerClick(marker : Marker): Boolean {
@@ -250,10 +267,11 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
         intent.putExtra("connectors", binaryConnectors)
         intent.putExtra("private", showPrivate)
         intent.putExtra("inactive", showInactive)
+        intent.putExtra("location", setLocation)
+        intent.putExtra("zoom", setZoomLevel)
         resultLauncher.launch(intent)
         //overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
     }
-
     private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == 1) {
             // There are no request codes
@@ -280,6 +298,17 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
         }
     }
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        Log.i("MapsFragment", "onCreateView")
+        return inflater.inflate(R.layout.fragment_maps, container, false)
+    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        Log.i("MapsFragment", "onViewCreated")
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+        mapFragment?.getMapAsync(callback)
+    }
+
     private fun bitmapDescriptorFromVector(context : Context, vectorResId : Int): BitmapDescriptor {
         val vectorDrawable : Drawable = ContextCompat.getDrawable(context, vectorResId)!!
         val width = vectorDrawable.intrinsicWidth
@@ -289,17 +318,5 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
         vectorDrawable.setBounds(0, 0, width, height)
         vectorDrawable.draw(canvas)
         return BitmapDescriptorFactory.fromBitmap(bitmap)
-    }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        Log.i("MapsFragment", "onCreateView")
-        return inflater.inflate(com.example.evchargingapp.R.layout.fragment_maps, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        Log.i("MapsFragment", "onViewCreated")
-        val mapFragment = childFragmentManager.findFragmentById(com.example.evchargingapp.R.id.map) as SupportMapFragment?
-        mapFragment?.getMapAsync(callback)
     }
 }

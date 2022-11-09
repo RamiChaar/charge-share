@@ -1,6 +1,6 @@
 package com.example.evchargingapp
 
-class NearestStations (var latitude : Double, var longitude : Double, var total_results : Int, val fuel_stations: List<Station>, var levelFilter : List<String>, var connectorFilter : List<String>) {
+class NearestStations (var total_results : Int, var fuel_stations: List<Station>) {
 
 }
 
