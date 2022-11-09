@@ -270,7 +270,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
         intent.putExtra("location", setLocation)
         intent.putExtra("zoom", setZoomLevel)
         resultLauncher.launch(intent)
-        //overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+        activity?.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
     }
     private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == 1) {

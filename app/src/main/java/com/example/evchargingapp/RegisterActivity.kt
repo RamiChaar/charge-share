@@ -1,6 +1,5 @@
 package com.example.evchargingapp
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
@@ -10,10 +9,11 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
-        val text = findViewById<TextView>(R.id.alreadyHaveAccount)
+        val alreadyHaveAccountBtn = findViewById<TextView>(com.example.evchargingapp.R.id.alreadyHaveAccount)
 
-        text.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
+        alreadyHaveAccountBtn.setOnClickListener {
+
         }
     }
+
 }
