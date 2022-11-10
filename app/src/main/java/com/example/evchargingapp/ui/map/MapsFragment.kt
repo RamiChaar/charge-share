@@ -10,6 +10,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.ProgressBar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -32,6 +35,8 @@ import kotlin.math.pow
 class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
 
     private lateinit var googleMap: GoogleMap
+    private lateinit var refreshButton : ImageButton
+    private lateinit var loadingIcon : ProgressBar
 
     private var mapReady = false
     private val defaultLat = 34.2407
@@ -59,9 +64,8 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
             googleMap.setMapStyle(style)
         }
 
+        loadingIcon = view?.findViewById(R.id.loading)!!
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(setLocation, setZoomLevel))
-
-        //load stations
         loadNearestStations(setLocation, searchRadius)
         googleMap.setOnMarkerClickListener(this)
 
@@ -73,6 +77,14 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
 
             Log.i("camera moved to: ", center.toString())
             Log.i("search radius: ", searchRadius.toString())
+        }
+
+        refreshButton = view?.findViewById(R.id.refreshButton)!!
+        refreshButton.setOnClickListener {
+            googleMap.clear()
+            loadedStations.clear()
+            addCurrentLocation()
+            loadNearestStations(googleMap.cameraPosition.target, searchRadius)
         }
     }
 
@@ -94,6 +106,8 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()
 
+        loadingIcon.visibility = View.VISIBLE
+        Log.e("loading", "response requested")
         //make API call to client
         client.newCall(request).enqueue(object: Callback {
             override fun onResponse(call: Call, response: Response) {
@@ -105,6 +119,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
 
                 //load markers on the main thread
                 activity?.runOnUiThread {
+                    Log.e("loading", "response fetched")
                     loadMarkers(newNearestStations)
                 }
 
@@ -193,6 +208,8 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
                 marker?.setIcon(defaultMarker)
             }
         }
+        loadingIcon.visibility = View.INVISIBLE
+        Log.e("loading", "markers loaded")
     }
 
     private fun addCurrentLocation() {
@@ -300,7 +317,9 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.i("MapsFragment", "onCreateView")
-        return inflater.inflate(R.layout.fragment_maps, container, false)
+        val view = inflater.inflate(R.layout.fragment_maps, container, false)
+
+        return view
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
