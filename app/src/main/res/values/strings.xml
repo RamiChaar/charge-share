@@ -3,7 +3,7 @@
     <string name="title_map">Map</string>
     <string name="title_profile">Profile</string>
     <string name="title_activity">EV Charging App</string>
-    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyAW9q84AWKQkrxjRS1i97ImeuOAJ7ynPWY</string>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyCXVQ4Q5NKkIyp9Om-huwTbI02HbZFom5M</string>
     <string name="charger_levels">Charger Levels:</string>
     <string name="connector_types">Connector Types:</string>
     <string name="back">Back</string>

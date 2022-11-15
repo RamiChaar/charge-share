@@ -1,11 +1,18 @@
 package com.example.evchargingapp.ui.map
 
+import android.Manifest.permission.*
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
+import android.location.Geocoder
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -13,19 +20,27 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresPermission
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.example.evchargingapp.FilterActivity
-import com.example.evchargingapp.NearestStations
-import com.example.evchargingapp.R
-import com.example.evchargingapp.Station
+import androidx.lifecycle.lifecycleScope
+import com.example.evchargingapp.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
+import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.android.libraries.places.ktx.api.net.awaitFindCurrentPlace
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.gson.GsonBuilder
+import kotlinx.coroutines.launch
 import okhttp3.*
 import java.io.IOException
 import kotlin.math.min
@@ -34,6 +49,7 @@ import kotlin.math.pow
 
 class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
 
+    private lateinit var placesClient: PlacesClient
     private lateinit var googleMap: GoogleMap
     private lateinit var refreshButton : ImageButton
     private lateinit var loadingIcon : ProgressBar
@@ -315,18 +331,150 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
         }
     }
 
+    private var searchLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // There are no request codes
+            val data: Intent? = result.data
+            when (result.resultCode) {
+                Activity.RESULT_OK -> {
+                    data?.let {
+                        val place = Autocomplete.getPlaceFromIntent(data)
+                        Log.i(ContentValues.TAG, "Place: ${place.name}, ${place.id}")
+
+                        googleMap.addMarker(MarkerOptions().position(place.latLng).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)))
+                        //googleMap.addMarker(MarkerOptions().position(latLng).title(location))
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLng(place.latLng))
+                        //Toast.makeText(requireContext(), address.latitude.toString() + " " + address.longitude, Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                Activity.RESULT_CANCELED -> {
+                    // The user canceled the operation.
+                }
+            }
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.i("MapsFragment", "onCreateView")
         val view = inflater.inflate(R.layout.fragment_maps, container, false)
 
         return view
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.i("MapsFragment", "onViewCreated")
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
+
+        val fields = listOf(Place.Field.ADDRESS, Place.Field.LAT_LNG)
+
+        val searchButton = view.findViewById<ImageButton>(R.id.searchButton)
+        searchButton.setOnClickListener {
+            val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
+                .build(context)
+            searchLauncher.launch(intent)
+
+            //startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE)
+        }
     }
+
+    /*private fun checkPermissionThenFindCurrentPlace() {
+        when {
+            (ContextCompat.checkSelfPermission(
+                requireContext(),
+                ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+                requireContext(),
+                ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED) -> {
+                // You can use the API that requires the permission.
+                findCurrentPlace()
+            }
+            shouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION)
+            -> {
+                Log.d(TAG, "Showing permission rationale dialog")
+                // TODO: In an educational UI, explain to the user why your app requires this
+                // permission for a specific feature to behave as expected. In this UI,
+                // include a "cancel" or "no thanks" button that allows the user to
+                // continue using your app without granting the permission.
+            }
+            else -> {
+                // Ask for both the ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION permissions.
+                ActivityCompat.requestPermissions(
+                    context as Activity,
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ),
+                    PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+    }
+
+    companion object {
+        private val TAG = "CurrentPlaceActivity"
+        private const val PERMISSION_REQUEST_CODE = 9
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>, grantResults: IntArray
+    ) {
+        if (requestCode != PERMISSION_REQUEST_CODE) {
+            super.onRequestPermissionsResult(
+                requestCode,
+                permissions,
+                grantResults
+            )
+            return
+        } else if (permissions.toList().zip(grantResults.toList())
+                .firstOrNull { (permission, grantResult) ->
+                    grantResult == PackageManager.PERMISSION_GRANTED && (permission == ACCESS_FINE_LOCATION || permission == ACCESS_COARSE_LOCATION)
+                } != null
+        )
+        // At least one location permission has been granted, so proceed with Find Current Place
+            findCurrentPlace()
+    }
+
+    @RequiresPermission(anyOf = [ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION])
+    private fun findCurrentPlace() {
+        // Use fields to define the data types to return.
+        val placeFields: List<Place.Field> =
+            listOf(Place.Field.NAME, Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG)
+
+        // Use the builder to create a FindCurrentPlaceRequest.
+        val request: FindCurrentPlaceRequest = FindCurrentPlaceRequest.newInstance(placeFields)
+
+        // Call findCurrentPlace and handle the response (first check that the user has granted permission).
+        if (ContextCompat.checkSelfPermission(requireContext(), ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(requireContext(), ACCESS_COARSE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            // Retrieve likely places based on the device's current location
+            lifecycleScope.launch {
+                try {
+                    val response = placesClient.awaitFindCurrentPlace(placeFields)
+                    //responseView.text = response.prettyPrint()
+
+                    // Enable scrolling on the long list of likely places
+                    //val movementMethod = ScrollingMovementMethod()
+                    //responseView.movementMethod = movementMethod
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    //responseView.text = e.message
+                }
+            }
+        } else {
+            Log.d(TAG, "LOCATION permission not granted")
+            checkPermissionThenFindCurrentPlace()
+
+        }
+    }*/
 
     private fun bitmapDescriptorFromVector(context : Context, vectorResId : Int): BitmapDescriptor {
         val vectorDrawable : Drawable = ContextCompat.getDrawable(context, vectorResId)!!
