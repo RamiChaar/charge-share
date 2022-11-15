@@ -47,7 +47,7 @@ import kotlin.math.min
 import kotlin.math.pow
 
 
-class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
+class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener{
 
     private lateinit var placesClient: PlacesClient
     private lateinit var googleMap: GoogleMap
@@ -104,6 +104,10 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
             loadedStations.clear()
             addCurrentLocation()
             loadNearestStations(googleMap.cameraPosition.target, searchRadius)
+        }
+        val filterButton = view?.findViewById<ImageButton>(R.id.filterButton)!!
+        filterButton.setOnClickListener {
+            openFilterActivity()
         }
     }
 
@@ -223,7 +227,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
                 marker?.setIcon(privateMarker)
                 snippetString += "Status: Active"
                 snippetString += "\nAccess: Private"
-                snippetString += "\nLevel: Fast(level3)"
+                snippetString += "\nLevel: Fast (Level3)"
             } else if(station.ev_dc_fast_num > 0) {
                 marker?.setIcon(levelThreeMarker)
                 snippetString += "Status: Active"
@@ -265,6 +269,11 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
         println("Marker $id has been clicked on.")
         marker.showInfoWindow()
         return true
+    }
+
+
+    override fun onInfoWindowClick(marker: Marker) {
+
     }
 
     private fun openFilterActivity() {
