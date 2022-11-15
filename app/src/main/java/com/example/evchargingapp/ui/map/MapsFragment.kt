@@ -82,6 +82,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
 
         loadingIcon = view?.findViewById(R.id.loading)!!
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(setLocation, setZoomLevel))
+        addCurrentLocation()
         loadNearestStations(setLocation, searchRadius)
         googleMap.setOnMarkerClickListener(this)
 
@@ -229,14 +230,15 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
     }
 
     private fun addCurrentLocation() {
-        googleMap.addMarker(MarkerOptions().position(setLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)))
+        val locationMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_location_marker) }
+        val marker = googleMap.addMarker(MarkerOptions().position(LatLng(defaultLat, defaultLng)).title("YourLocation"))
+        marker?.setIcon(locationMarker)
     }
 
     override fun onMarkerClick(marker : Marker): Boolean {
         val id = marker.tag as? Int
         println("Marker $id has been clicked on.")
         marker.showInfoWindow()
-        openFilterActivity()
         return true
     }
 
@@ -341,7 +343,8 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
                         val place = Autocomplete.getPlaceFromIntent(data)
                         Log.i(ContentValues.TAG, "Place: ${place.name}, ${place.id}")
 
-                        googleMap.addMarker(MarkerOptions().position(place.latLng).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)))
+                        googleMap.clear()
+                        loadedStations.clear()
                         //googleMap.addMarker(MarkerOptions().position(latLng).title(location))
                         googleMap.animateCamera(CameraUpdateFactory.newLatLng(place.latLng))
                         //Toast.makeText(requireContext(), address.latitude.toString() + " " + address.longitude, Toast.LENGTH_LONG).show()
