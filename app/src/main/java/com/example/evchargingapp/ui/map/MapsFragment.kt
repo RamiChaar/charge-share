@@ -75,6 +75,8 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
         this.googleMap = googleMap
         mapReady = true
 
+        googleMap.setInfoWindowAdapter(context?.let { CustomInfoWindow(it) })
+
         val style = context?.let { MapStyleOptions.loadRawResourceStyle(it, R.raw.map_dark_theme) }
         if (context?.resources?.configuration?.uiMode == 33) {
             googleMap.setMapStyle(style)
@@ -211,19 +213,38 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
             marker = googleMap.addMarker(MarkerOptions().position(LatLng(station.latitude, station.longitude)).title(station.station_name))
             marker?.tag = station.id
             marker?.setIcon(defaultMarker)
+
+            var snippetString = ""
+
             if(station.status_code != "E") {
                 marker?.setIcon(inactiveMarker)
+                snippetString += "Status: Inactive"
             } else if(station.access_code == "private") {
                 marker?.setIcon(privateMarker)
+                snippetString += "Status: Active"
+                snippetString += "\nAccess: Private"
+                snippetString += "\nLevel: Fast(level3)"
             } else if(station.ev_dc_fast_num > 0) {
                 marker?.setIcon(levelThreeMarker)
+                snippetString += "Status: Active"
+                snippetString += "\nAccess: Public"
+                snippetString += "\nLevel: Fast (Level3)"
             } else if(station.ev_level2_evse_num > 0) {
                 marker?.setIcon(levelTwoMarker)
+                snippetString += "Status: Active"
+                snippetString += "\nAccess: Public"
+                snippetString += "\nLevel: Level 2"
             } else if(station.ev_level1_evse_num > 0) {
                 marker?.setIcon(levelOneMarker)
+                snippetString += "Status: Active"
+                snippetString += "\nAccess: Public"
+                snippetString += "\nLevel: Level 1"
             } else {
                 marker?.setIcon(defaultMarker)
+                snippetString += "Details Unknown"
             }
+
+            marker?.snippet = snippetString
         }
         loadingIcon.visibility = View.INVISIBLE
         Log.e("loading", "markers loaded")
@@ -231,11 +252,15 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
 
     private fun addCurrentLocation() {
         val locationMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_location_marker) }
-        val marker = googleMap.addMarker(MarkerOptions().position(LatLng(defaultLat, defaultLng)).title("YourLocation"))
+        val marker = googleMap.addMarker(MarkerOptions().position(LatLng(defaultLat, defaultLng)))
         marker?.setIcon(locationMarker)
+        marker?.tag = "location"
     }
 
     override fun onMarkerClick(marker : Marker): Boolean {
+        if(marker.tag == "location"){
+            return true
+        }
         val id = marker.tag as? Int
         println("Marker $id has been clicked on.")
         marker.showInfoWindow()
@@ -361,7 +386,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.i("MapsFragment", "onCreateView")
         val view = inflater.inflate(R.layout.fragment_maps, container, false)
-
         return view
     }
 
