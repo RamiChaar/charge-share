@@ -47,7 +47,7 @@ import kotlin.math.min
 import kotlin.math.pow
 
 
-class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener{
+class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
     private lateinit var placesClient: PlacesClient
     private lateinit var googleMap: GoogleMap
@@ -109,6 +109,14 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener, GoogleMap.OnIn
         filterButton.setOnClickListener {
             openFilterActivity()
         }
+        googleMap.setOnInfoWindowClickListener { marker ->
+            val id = marker.tag
+            Log.i("marker $id", "Info Window Clicked")
+            val intent = Intent(context, StationInfoActivity::class.java)
+            intent.putExtra("id", id.toString())
+            Log.e("launching info for", id.toString())
+            stationInfoLauncher.launch(intent)
+        }
     }
 
     override fun onResume() {
@@ -130,7 +138,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener, GoogleMap.OnIn
         val client = OkHttpClient()
 
         loadingIcon.visibility = View.VISIBLE
-        Log.e("loading", "response requested")
+        Log.i("loading", "response requested")
         //make API call to client
         client.newCall(request).enqueue(object: Callback {
             override fun onResponse(call: Call, response: Response) {
@@ -142,7 +150,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener, GoogleMap.OnIn
 
                 //load markers on the main thread
                 activity?.runOnUiThread {
-                    Log.e("loading", "response fetched")
+                    Log.i("loading", "response fetched")
                     loadMarkers(newNearestStations)
                 }
 
@@ -251,7 +259,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener, GoogleMap.OnIn
             marker?.snippet = snippetString
         }
         loadingIcon.visibility = View.INVISIBLE
-        Log.e("loading", "markers loaded")
+        Log.i("loading", "markers loaded")
     }
 
     private fun addCurrentLocation() {
@@ -269,11 +277,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener, GoogleMap.OnIn
         println("Marker $id has been clicked on.")
         marker.showInfoWindow()
         return true
-    }
-
-
-    override fun onInfoWindowClick(marker: Marker) {
-
     }
 
     private fun openFilterActivity() {
@@ -385,6 +388,20 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener, GoogleMap.OnIn
                     }
                 }
 
+                Activity.RESULT_CANCELED -> {
+                    // The user canceled the operation.
+                }
+            }
+        }
+    }
+
+    private var stationInfoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            when (result.resultCode) {
+
+                Activity.RESULT_OK -> {
+
+                }
                 Activity.RESULT_CANCELED -> {
                     // The user canceled the operation.
                 }

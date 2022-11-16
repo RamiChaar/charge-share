@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:fillViewport="false"
+    android:fadeScrollbars="false"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".StationInfoActivity"
+    >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="78dp"
+            android:layout_height="38dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/back"
+            app:layout_constraintHorizontal_bias="0.049"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/generalPreferences"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/station_name"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Station Name: "
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="16dp"/>
+
+        <TextView
+            android:id="@+id/access"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Access: "
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="16dp"/>
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Status: "
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="16dp"/>
+
+        <TextView
+            android:id="@+id/connectors"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Connectors: "
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="16dp"/>
+
+        <TextView
+            android:id="@+id/address"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Address: "
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="16dp"/>
+        <TextView
+            android:id="@+id/phone"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Phone: "
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="16dp"/>
+        <TextView
+            android:id="@+id/time_info"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Time Details: "
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="16dp"/>
+        <TextView
+            android:id="@+id/pricing_info"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Pricing Details: "
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="16dp"/>
+        <TextView
+            android:id="@+id/direction_info"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Direction Information: "
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="16dp"/>
+        <TextView
+            android:id="@+id/network"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Network: "
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="16dp"/>
+
+
+
+    </LinearLayout>
+</ScrollView>

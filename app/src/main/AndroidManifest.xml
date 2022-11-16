@@ -18,6 +18,9 @@
         android:theme="@style/Theme.EVChargingApp"
         tools:targetApi="31">
         <activity
+            android:name=".StationInfoActivity"
+            android:exported="false" />
+        <activity
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity
@@ -26,8 +29,6 @@
         <activity
             android:name=".FilterActivity"
             android:exported="false" />
-
-
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -43,7 +44,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AutocompleteActivity" />
+<!--        <activity android:name=".AutocompleteActivity" />-->
     </application>
 
 </manifest>

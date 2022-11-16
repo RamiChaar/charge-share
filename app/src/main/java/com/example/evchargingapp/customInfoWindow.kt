@@ -2,12 +2,13 @@ package com.example.evchargingapp
 
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 
-class CustomInfoWindow (context: Context) : GoogleMap.InfoWindowAdapter {
+class CustomInfoWindow (context: Context) : GoogleMap.InfoWindowAdapter{
 
     var mWindow = (context as Activity).layoutInflater.inflate(R.layout.info_window, null)
 
@@ -30,4 +31,5 @@ class CustomInfoWindow (context: Context) : GoogleMap.InfoWindowAdapter {
         renderWindowText(marker, mWindow)
         return mWindow
     }
+
 }

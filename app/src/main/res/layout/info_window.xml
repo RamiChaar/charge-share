@@ -34,18 +34,6 @@
             android:textColor="#000"
             android:textSize="14sp" />
 
-        <Button
-            style="?android:attr/borderlessButtonStyle"
-            android:id="@+id/infoWindowButton"
-            android:layout_width="65dp"
-            android:layout_height="35dp"
-            android:layout_gravity="center"
-            android:layout_marginTop = "10dp"
-            android:background="@drawable/window_shape"
-            android:text="Details"
-            android:textSize="8sp"
-
-            />
     </LinearLayout>
 
 
