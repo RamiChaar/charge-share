@@ -3,6 +3,7 @@ package com.example.evchargingapp
 import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
@@ -11,15 +12,30 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import com.google.android.gms.maps.model.LatLng
+import kotlin.properties.Delegates
 
 
 class FilterActivity : AppCompatActivity() {
 
+    private var showPrivate = true
+    private var showInactive = true
+    private var levels = mutableListOf<String>()
+    private var connectors = mutableListOf<String>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val viewActionBar = layoutInflater.inflate(R.layout.station_info_bar, null);
+        val toolBarLabel = viewActionBar.findViewById<androidx.appcompat.widget.AppCompatTextView>(R.id.toolBarTitle)
+        toolBarLabel.text = "Preferences"
+        supportActionBar?.customView = viewActionBar;
+        supportActionBar?.setDisplayShowCustomEnabled(true);
+        supportActionBar?.setDisplayShowTitleEnabled(false);
+        supportActionBar?.setDisplayHomeAsUpEnabled(true);
+        supportActionBar?.setHomeButtonEnabled(true);
+
         setContentView(R.layout.activity_filter)
 
-        val backButton = findViewById<Button>(R.id.backButton)
         val private = findViewById<SwitchCompat>(R.id.showPrivate)
         val inactive = findViewById<SwitchCompat>(R.id.showInactive)
         val level1 = findViewById<SwitchCompat>(R.id.level1)
@@ -38,11 +54,8 @@ class FilterActivity : AppCompatActivity() {
         val allConnectors = mutableListOf("J1772", "J1772COMBO", "TESLA", "CHADEMO", "NEMA1450", "NEMA515", "NEMA520")
         val binaryLevels = intent.getStringExtra("levels")
         val binaryConnectors = intent.getStringExtra("connectors")
-        var showPrivate = intent.getBooleanExtra("private", true)
-        var showInactive = intent.getBooleanExtra("inactive", true)
-
-        val levels = mutableListOf<String>()
-        val connectors = mutableListOf<String>()
+        showPrivate = intent.getBooleanExtra("private", true)
+        showInactive = intent.getBooleanExtra("inactive", true)
 
         for(i in 0..2){
             if(binaryLevels?.get(i)  == '1'){
@@ -182,18 +195,6 @@ class FilterActivity : AppCompatActivity() {
                 connectors.remove("NEMA520")
             }
         }
-
-        backButton.setOnClickListener{
-            val returnIntent = Intent()
-            val binaryLevelsReturn = getBinaryLevels(levels)
-            val binaryConnectorsReturn = getBinaryConnectors(connectors)
-            returnIntent.putExtra("levels", binaryLevelsReturn)
-            returnIntent.putExtra("connectors", binaryConnectorsReturn)
-            returnIntent.putExtra("private", showPrivate)
-            returnIntent.putExtra("inactive", showInactive)
-            setResult(1, returnIntent)
-            finish()
-        }
     }
 
     private fun getBinaryLevels(levels: MutableList<String>): String {
@@ -257,6 +258,18 @@ class FilterActivity : AppCompatActivity() {
         return binaryConnectors
     }
 
+    override fun onOptionsItemSelected(menuItem: MenuItem): Boolean {
+        val returnIntent = Intent()
+        val binaryLevelsReturn = getBinaryLevels(levels)
+        val binaryConnectorsReturn = getBinaryConnectors(connectors)
+        returnIntent.putExtra("levels", binaryLevelsReturn)
+        returnIntent.putExtra("connectors", binaryConnectorsReturn)
+        returnIntent.putExtra("private", showPrivate)
+        returnIntent.putExtra("inactive", showInactive)
+        setResult(1, returnIntent)
+        finish()
+        return super.onOptionsItemSelected(menuItem)
+    }
     override fun finish() {
         super.finish()
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)

@@ -28,6 +28,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.evchargingapp.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -43,6 +45,7 @@ import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
 import okhttp3.*
 import java.io.IOException
+import java.util.*
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -58,7 +61,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
     private val defaultLat = 34.2407
     private val defaultLng = -118.5300
     private var setLocation = LatLng(defaultLat, defaultLng)
-    private var setZoomLevel = 12.0f
+    private var setZoomLevel = 13.0f
 
     private var searchRadius = 4.0
 
@@ -121,14 +124,19 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
     override fun onResume() {
         super.onResume()
+        Log.i("MapsFragment", "onResume")
+
+    }
+
+    fun refreshMarkers() {
         if(mapReady){
-            Log.i("MapsFragment", "onResume")
             googleMap.clear()
             loadedStations.clear()
             addCurrentLocation()
             loadNearestStations(googleMap.cameraPosition.target, searchRadius)
         }
     }
+
 
     private fun loadNearestStations(location: LatLng, radius: Double) {
         val latitude = location.latitude
@@ -341,10 +349,10 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         intent.putExtra("inactive", showInactive)
         intent.putExtra("location", setLocation)
         intent.putExtra("zoom", setZoomLevel)
-        resultLauncher.launch(intent)
+        filterLauncher.launch(intent)
         activity?.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
     }
-    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    private var filterLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == 1) {
             // There are no request codes
             val data: Intent? = result.data
@@ -367,6 +375,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
                     connectors.add(allConnectors[i])
                 }
             }
+            refreshMarkers()
         }
     }
 
@@ -385,6 +394,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
                         //googleMap.addMarker(MarkerOptions().position(latLng).title(location))
                         googleMap.animateCamera(CameraUpdateFactory.newLatLng(place.latLng))
                         //Toast.makeText(requireContext(), address.latitude.toString() + " " + address.longitude, Toast.LENGTH_LONG).show()
+                        refreshMarkers()
                     }
                 }
 

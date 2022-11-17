@@ -2,24 +2,21 @@ package com.example.evchargingapp
 
 import SingleStation
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.View
+import android.view.MenuItem
 import android.widget.Button
-import android.widget.Switch
 import android.widget.TextView
-import com.google.android.libraries.places.api.net.PlacesClient
+import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
+
 
 class StationInfoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_station_info)
-
-        val backButton = findViewById<Button>(R.id.backButton)
 
         val intent = intent
         val id = intent.getStringExtra("id")
@@ -28,11 +25,6 @@ class StationInfoActivity : AppCompatActivity() {
             getStation(id)
         }
 
-        backButton.setOnClickListener{
-            val returnIntent = Intent()
-            setResult(1, returnIntent)
-            finish()
-        }
     }
 
     fun getStation(id : String) {
@@ -66,9 +58,8 @@ class StationInfoActivity : AppCompatActivity() {
         })
     }
 
-    fun loadData(station : SingleStation) {
-        val nameField = findViewById<TextView>(R.id.station_name)
-        val accessField= findViewById<TextView>(R.id.access)
+    fun loadData(station: SingleStation) {
+        val accessField = findViewById<TextView>(R.id.access)
         val statusField = findViewById<TextView>(R.id.status)
         val connectorsField = findViewById<TextView>(R.id.connectors)
         val addressField = findViewById<TextView>(R.id.address)
@@ -93,9 +84,9 @@ class StationInfoActivity : AppCompatActivity() {
         var directionInfo = station.intersection_directions
         var network = station.ev_network
 
-        if(status == "E"){
+        if (status == "E") {
             status = "Available"
-        } else if(status == "P"){
+        } else if (status == "P") {
             status = "Planned"
         } else {
             status = "Temporarily Unavailable"
@@ -111,7 +102,6 @@ class StationInfoActivity : AppCompatActivity() {
             connectors += "\n                     Fast (Level 3)"
         }
 
-        nameField.text = "Station Name: " + name
         accessField.text = "Access: " + access
         statusField.text = "Status: " + status
         connectorsField.text = "Connectors: " + connectors
@@ -121,6 +111,23 @@ class StationInfoActivity : AppCompatActivity() {
         pricingField.text = "Pricing Details: " + pricingInfo
         directionField.text = "Direction Information: " + directionInfo
         networkField.text = "Network: " + network
+
+        val viewActionBar = layoutInflater.inflate(R.layout.station_info_bar, null);
+        val toolBarLabel = viewActionBar.findViewById<androidx.appcompat.widget.AppCompatTextView>(R.id.toolBarTitle)
+        toolBarLabel.text = name
+        supportActionBar?.customView = viewActionBar;
+        supportActionBar?.setDisplayShowCustomEnabled(true);
+        supportActionBar?.setDisplayShowTitleEnabled(false);
+        supportActionBar?.setDisplayHomeAsUpEnabled(true);
+        supportActionBar?.setHomeButtonEnabled(true);
+
+    }
+
+    override fun onOptionsItemSelected(menuItem: MenuItem): Boolean {
+        val returnIntent = Intent()
+        setResult(1, returnIntent)
+        finish()
+        return super.onOptionsItemSelected(menuItem)
     }
 
 }
