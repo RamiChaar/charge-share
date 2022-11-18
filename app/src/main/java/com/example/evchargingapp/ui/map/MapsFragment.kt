@@ -128,7 +128,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
     }
 
-    fun refreshMarkers() {
+    private fun refreshMarkers() {
         if(mapReady){
             googleMap.clear()
             loadedStations.clear()
@@ -136,7 +136,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             loadNearestStations(googleMap.cameraPosition.target, searchRadius)
         }
     }
-
 
     private fun loadNearestStations(location: LatLng, radius: Double) {
         val latitude = location.latitude

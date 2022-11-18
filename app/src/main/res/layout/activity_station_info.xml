@@ -1,115 +1,296 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="fill_parent"
     android:orientation="vertical"
-    android:padding="10dp"
+    android:padding="20dp"
     android:fillViewport="false"
     android:fadeScrollbars="false"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".StationInfoActivity"
-    >
-    <LinearLayout
+    android:background="@color/grey_100">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/access"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:id="@+id/navigationSection"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Access: "
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/infoSection"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="16dp"/>
+            android:layout_marginBottom="10dp"
+            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:background="@drawable/window_shape">
 
-        <TextView
-            android:id="@+id/status"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Status: "
-            app:layout_constraintTop_toBottomOf="@+id/backButton"
-            app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="16dp"/>
+            <TextView
+                android:id="@+id/address"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/navigateButton"
+                android:textColor="#000000"
+                android:layout_marginLeft="50dp"
+                android:layout_marginRight="5dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textSize="16dp"
+                />
 
-        <TextView
-            android:id="@+id/connectors"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Connectors: "
-            app:layout_constraintTop_toBottomOf="@+id/backButton"
-            app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="16dp"/>
+            <ImageButton
+                android:id="@+id/navigateButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/navigationText"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:background="@drawable/navigation_button_selector"/>
 
-        <TextView
-            android:id="@+id/address"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Address: "
-            app:layout_constraintTop_toBottomOf="@+id/backButton"
-            app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="16dp"/>
-        <TextView
-            android:id="@+id/phone"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Phone: "
-            app:layout_constraintTop_toBottomOf="@+id/backButton"
-            app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="16dp"/>
-        <TextView
-            android:id="@+id/time_info"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Time Details: "
-            app:layout_constraintTop_toBottomOf="@+id/backButton"
-            app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="16dp"/>
-        <TextView
-            android:id="@+id/pricing_info"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Pricing Details: "
-            app:layout_constraintTop_toBottomOf="@+id/backButton"
-            app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="16dp"/>
-        <TextView
-            android:id="@+id/direction_info"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Direction Information: "
-            app:layout_constraintTop_toBottomOf="@+id/backButton"
-            app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="16dp"/>
-        <TextView
-            android:id="@+id/network"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Network: "
-            app:layout_constraintTop_toBottomOf="@+id/backButton"
-            app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="16dp"/>
+        </LinearLayout>
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/infoSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/navigationSection"
+            app:layout_constraintBottom_toTopOf="@+id/connectorSection"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/window_shape">
 
+            <TextView
+                android:id="@+id/accessTitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Access"
+                android:textSize="16dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/access"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/access"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:textColor="#000000"
+                app:layout_constraintTop_toBottomOf="@+id/accessTitle"
+                app:layout_constraintBottom_toTopOf="@+id/statusTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/statusTitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Station Status"
+                android:textSize="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/access"
+                app:layout_constraintBottom_toTopOf="@+id/status"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:textColor="#000000"
+                app:layout_constraintTop_toBottomOf="@+id/statusTitle"
+                app:layout_constraintBottom_toTopOf="@+id/phoneTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/phoneTitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Phone"
+                android:textSize="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/status"
+                app:layout_constraintBottom_toTopOf="@+id/phone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/phone"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:textColor="#000000"
+                app:layout_constraintTop_toBottomOf="@+id/phoneTitle"
+                app:layout_constraintBottom_toTopOf="@+id/timeInfoTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/timeInfoTitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Access Time"
+                android:textSize="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/phone"
+                app:layout_constraintBottom_toTopOf="@+id/timeInfo"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/timeInfo"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:textColor="#000000"
+                app:layout_constraintTop_toBottomOf="@+id/timeInfoTitle"
+                app:layout_constraintBottom_toTopOf="@+id/pricingInfoTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/pricingInfoTitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Pricing"
+                android:textSize="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/timeInfo"
+                app:layout_constraintBottom_toTopOf="@+id/pricingInfo"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/pricingInfo"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:textColor="#000000"
+                app:layout_constraintTop_toBottomOf="@+id/pricingInfoTitle"
+                app:layout_constraintBottom_toTopOf="@+id/directionInfoTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/directionInfoTitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Direction Details"
+                android:textSize="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/pricingInfo"
+                app:layout_constraintBottom_toTopOf="@+id/directionInfo"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/directionInfo"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:textColor="#000000"
+                app:layout_constraintTop_toBottomOf="@+id/directionInfoTitle"
+                app:layout_constraintBottom_toTopOf="@+id/networkTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/networkTitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Charger Network"
+                android:textSize="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/directionInfo"
+                app:layout_constraintBottom_toTopOf="@+id/network"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/network"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:textColor="#000000"
+                app:layout_constraintTop_toBottomOf="@+id/networkTitle"
+                app:layout_constraintBottom_toTopOf="@+id/networkWebTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/networkWebTitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Network Site"
+                android:textSize="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/network"
+                app:layout_constraintBottom_toTopOf="@+id/networkWeb"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/networkWeb"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#000000"
+                android:textColorLink="#03A9F4"
+                android:autoLink="web"
+                app:layout_constraintTop_toBottomOf="@+id/networkWebTitle"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/connectorSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/infoSection"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:background="@drawable/window_shape">
+
+            <TextView
+                android:id="@+id/connectorsTitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Connectors"
+                android:textSize="16dp"
+                app:layout_constraintBottom_toTopOf="@+id/connectors"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <TextView
+                android:id="@+id/connectors"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#000000"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/connectorsTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </ScrollView>
