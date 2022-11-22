@@ -11,19 +11,27 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="10dp"
-        android:background="@drawable/window_shape" >
+        android:background="@drawable/window_shape">
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="160dp"
+        <LinearLayout
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:layout_width="180dp"
             android:gravity="center"
-            android:layout_marginBottom="10dp"
-            android:ellipsize="end"
-            android:textColor="#000"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:translationX="-7dp"
+            >
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="10dp"
+                android:ellipsize="end"
+                android:textColor="#000"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+         </LinearLayout>
 
         <TextView
             android:id="@+id/snippet"
@@ -36,5 +44,12 @@
 
     </LinearLayout>
 
+    <ImageButton
+        android:id="@+id/navigateButton"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:translationX="-30dp"
+        android:translationY="10dp"
+        android:background="@drawable/info_icon"/>
 
 </LinearLayout>

@@ -4,6 +4,7 @@ import android.Manifest.permission.*
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentValues
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -35,6 +36,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
@@ -112,6 +114,27 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         filterButton.setOnClickListener {
             openFilterActivity()
         }
+
+        placesClient = Places.createClient(context)
+
+        val fields = listOf(Place.Field.ADDRESS, Place.Field.LAT_LNG)
+
+        val searchButton = view?.findViewById<ImageButton>(R.id.searchButton)!!
+        searchButton.setOnClickListener {
+            val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
+                .build(context)
+            searchLauncher.launch(intent)
+
+            //startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE)
+        }
+
+        val currentLocationButton = view?.findViewById<ImageButton>(R.id.currentLocationButton)!!
+        currentLocationButton.setOnClickListener {
+
+            checkPermissionThenFindCurrentPlace()
+
+        }
+
         googleMap.setOnInfoWindowClickListener { marker ->
             val id = marker.tag
             Log.i("marker $id", "Info Window Clicked")
@@ -128,7 +151,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
     }
 
-    fun refreshMarkers() {
+    private fun refreshMarkers() {
         if(mapReady){
             googleMap.clear()
             loadedStations.clear()
@@ -136,7 +159,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             loadNearestStations(googleMap.cameraPosition.target, searchRadius)
         }
     }
-
 
     private fun loadNearestStations(location: LatLng, radius: Double) {
         val latitude = location.latitude
@@ -431,19 +453,9 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
 
-        val fields = listOf(Place.Field.ADDRESS, Place.Field.LAT_LNG)
-
-        val searchButton = view.findViewById<ImageButton>(R.id.searchButton)
-        searchButton.setOnClickListener {
-            val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
-                .build(context)
-            searchLauncher.launch(intent)
-
-            //startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE)
-        }
     }
 
-    /*private fun checkPermissionThenFindCurrentPlace() {
+    private fun checkPermissionThenFindCurrentPlace() {
         when {
             (ContextCompat.checkSelfPermission(
                 requireContext(),
@@ -455,21 +467,13 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
                 // You can use the API that requires the permission.
                 findCurrentPlace()
             }
-            shouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION)
-            -> {
-                Log.d(TAG, "Showing permission rationale dialog")
-                // TODO: In an educational UI, explain to the user why your app requires this
-                // permission for a specific feature to behave as expected. In this UI,
-                // include a "cancel" or "no thanks" button that allows the user to
-                // continue using your app without granting the permission.
-            }
             else -> {
                 // Ask for both the ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION permissions.
                 ActivityCompat.requestPermissions(
                     context as Activity,
                     arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
+                        android.Manifest.permission.ACCESS_FINE_LOCATION,
+                        android.Manifest.permission.ACCESS_COARSE_LOCATION
                     ),
                     PERMISSION_REQUEST_CODE
                 )
@@ -478,7 +482,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
     }
 
     companion object {
-        private val TAG = "CurrentPlaceActivity"
         private const val PERMISSION_REQUEST_CODE = 9
     }
 
@@ -521,15 +524,14 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             // Retrieve likely places based on the device's current location
             lifecycleScope.launch {
                 try {
-                    val response = placesClient.awaitFindCurrentPlace(placeFields)
-                    //responseView.text = response.prettyPrint()
 
-                    // Enable scrolling on the long list of likely places
-                    //val movementMethod = ScrollingMovementMethod()
-                    //responseView.movementMethod = movementMethod
+                    val response = placesClient.awaitFindCurrentPlace(placeFields)
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLng(response.placeLikelihoods[0].place.latLng))
+
                 } catch (e: Exception) {
+
                     e.printStackTrace()
-                    //responseView.text = e.message
+
                 }
             }
         } else {
@@ -537,7 +539,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             checkPermissionThenFindCurrentPlace()
 
         }
-    }*/
+    }
 
     private fun bitmapDescriptorFromVector(context : Context, vectorResId : Int): BitmapDescriptor {
         val vectorDrawable : Drawable = ContextCompat.getDrawable(context, vectorResId)!!
