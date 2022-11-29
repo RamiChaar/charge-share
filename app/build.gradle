@@ -36,7 +36,6 @@ android {
         jvmTarget = '1.8'
     }
     buildFeatures{
-        dataBinding = true
         viewBinding = true
     }
 }
@@ -54,6 +53,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.firebase:firebase-firestore:24.4.1'
+    implementation 'com.google.firebase:firebase-auth:21.1.0'
     testImplementation 'junit:junit:4.13.2'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.5.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
