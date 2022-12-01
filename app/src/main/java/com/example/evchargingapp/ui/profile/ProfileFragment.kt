@@ -27,8 +27,8 @@ class ProfileFragment : Fragment() {
         val username = sp.getString("username", "")
         val password = sp.getString("password", "")
 
-        if(username == "" || password == ""){
-            val intent = Intent(context, LoginActivity::class.java)
+      if(username == "" || password == ""){
+           val intent = Intent(context, LoginActivity::class.java)
             resultLauncher.launch(intent)
         }
 

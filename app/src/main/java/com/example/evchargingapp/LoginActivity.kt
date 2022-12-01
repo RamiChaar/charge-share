@@ -1,18 +1,21 @@
 package com.example.evchargingapp
 
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
 import com.example.evchargingapp.databinding.ActivityLoginBinding
 import com.example.evchargingapp.databinding.ActivityRegisterBinding
+import com.example.evchargingapp.ui.profile.ProfileFragment
 import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var sp: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +32,12 @@ class LoginActivity : AppCompatActivity() {
 
                     firebaseAuth.signInWithEmailAndPassword(email , pass).addOnCompleteListener{
                         if (it.isSuccessful) {
-                            val intent = Intent(this, MainActivity::class.java)
+                            val returnIntent = Intent()
+
+                            returnIntent.putExtra("username", email)
+                            returnIntent.putExtra("password", pass)
+
+                            finish()
                         }else{
                             Toast.makeText(this, it.exception.toString() , Toast.LENGTH_SHORT).show()
 

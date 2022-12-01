@@ -32,8 +32,7 @@ class RegisterActivity : AppCompatActivity() {
 
                     firebaseAuth.createUserWithEmailAndPassword(email , pass).addOnCompleteListener{
                         if (it.isSuccessful) {
-                            val intent = Intent(this, LoginActivity::class.java)
-                            startActivity(intent)
+                          finish()
                         }else{
                             Toast.makeText(this, it.exception.toString() , Toast.LENGTH_SHORT).show()
 
@@ -47,7 +46,9 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
         binding.alreadyHaveAccount.setOnClickListener {
-            startActivity(Intent(this, LoginActivity::class.java))
+           //
+        // startActivity(Intent(this, LoginActivity::class.java))
+            finish()
             }
 
         }
