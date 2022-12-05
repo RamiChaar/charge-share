@@ -46,6 +46,7 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
 import okhttp3.*
+import okhttp3.internal.immutableListOf
 import java.io.IOException
 import java.util.*
 import kotlin.math.min
@@ -108,6 +109,11 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             loadedStations.clear()
             addCurrentLocation()
             loadNearestStations(googleMap.cameraPosition.target, searchRadius)
+            var station = Station(32456, 34.305430, -118.474700, "Carlos Custom Marker",
+                "E", "custom", immutableListOf("TESLA"), 0, 1, 0);
+            var fuelStations = immutableListOf(station)
+            var customStation = NearestStations(1, fuelStations)
+            loadMarkers(customStation);
         }
         val filterButton = view?.findViewById<ImageButton>(R.id.filterButton)!!
         filterButton.setOnClickListener {
@@ -192,6 +198,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
     private fun loadMarkers(newNearestStations: NearestStations) {
         val defaultMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_default_marker) }
+        val customMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_custom_marker) }
         val inactiveMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_inactive_marker) }
         val privateMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_private_marker) }
         val levelOneMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level1_marker) }
@@ -257,9 +264,16 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
             var snippetString = ""
 
+
             if(station.status_code != "E") {
                 marker?.setIcon(inactiveMarker)
                 snippetString += "Status: Inactive"
+            } else if(station.access_code == "custom") {
+                marker?.setIcon(customMarker)
+                snippetString += "Address: 15764 Larkspur St, Sylmar, CA 91342"
+                snippetString += "\nStatus: Active (custom)"
+                snippetString += "\nAccess: Public"
+                snippetString += "\nLevel: Level 2"
             } else if(station.access_code == "private") {
                 marker?.setIcon(privateMarker)
                 snippetString += "Status: Active"
