@@ -23,9 +23,7 @@
         android:id="@+id/rentmyhomeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="69dp"
         android:layout_marginTop="100dp"
-        android:layout_marginEnd="94dp"
         android:text="Rent my Home Charger"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -33,19 +31,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/adressInput"
+        android:id="@+id/addressInput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="87dp"
-        android:layout_marginTop="56dp"
-        android:layout_marginBottom="56dp"
-        android:layout_marginEnd="114dp"
-        android:ems="10"
+        android:layout_marginTop="60dp"
+        android:ems="15"
         android:hint="Address"
         android:inputType="textPostalAddress"
-        android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rentmyhomeText" />
 
@@ -53,59 +46,45 @@
         android:id="@+id/chargerTypeIn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="85dp"
-        android:layout_marginTop="61dp"
-        android:ems="10"
+        android:layout_marginTop="55dp"
+        android:ems="15"
         android:hint="Charger Type"
-        android:layout_marginBottom="56dp"
         android:inputType="textPersonName"
-        android:minHeight="48dp"
-        app:layout_constraintBottom_toTopOf="@+id/TimeIn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/adressInput" />
+        app:layout_constraintTop_toBottomOf="@+id/addressInput" />
 
     <EditText
         android:id="@+id/TimeIn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="85dp"
-        android:layout_marginEnd="116dp"
-        android:layout_marginBottom="56dp"
-        android:ems="10"
+        android:layout_marginTop="55dp"
+        android:ems="15"
         android:hint="Time"
         android:inputType="textPersonName"
-        android:minHeight="48dp"
-        app:layout_constraintBottom_toTopOf="@+id/PriceIn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chargerTypeIn" />
 
     <EditText
         android:id="@+id/PriceIn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="85dp"
-        android:layout_marginEnd="112dp"
-        android:layout_marginBottom="62dp"
-        android:ems="10"
+        android:layout_marginTop="55dp"
+        android:ems="15"
         android:hint="Price"
         android:inputType="textPersonName"
-        android:minHeight="48dp"
-        app:layout_constraintBottom_toTopOf="@+id/submitbutton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/TimeIn" />
 
     <Button
         android:id="@+id/submitbutton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="153dp"
-        android:layout_marginEnd="167dp"
-        android:layout_marginBottom="105dp"
         android:text="Submit"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/PriceIn" />
 </androidx.constraintlayout.widget.ConstraintLayout>
