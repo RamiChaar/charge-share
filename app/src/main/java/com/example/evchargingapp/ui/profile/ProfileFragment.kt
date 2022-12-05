@@ -15,6 +15,7 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.Fragment
 import com.example.evchargingapp.LoginActivity
 import com.example.evchargingapp.R
+import com.example.evchargingapp.rentHomeCharging
 
 
 class ProfileFragment : Fragment() {
@@ -41,7 +42,8 @@ class ProfileFragment : Fragment() {
         }
 
         rentMyChargerButton.setOnClickListener {
-            //TO DO
+            val intent = Intent(context, rentHomeCharging::class.java)
+            resultLauncher.launch(intent)
         }
 
         reportButton.setOnClickListener {
