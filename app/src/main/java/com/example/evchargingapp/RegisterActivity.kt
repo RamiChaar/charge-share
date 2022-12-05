@@ -46,10 +46,7 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
         binding.alreadyHaveAccount.setOnClickListener {
-           //
-        // startActivity(Intent(this, LoginActivity::class.java))
             finish()
-            }
-
         }
     }
+}
