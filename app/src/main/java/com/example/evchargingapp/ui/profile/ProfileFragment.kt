@@ -18,6 +18,7 @@ import com.example.evchargingapp.R
 class ProfileFragment : Fragment() {
 
     private lateinit var sp: SharedPreferences
+    private var loggedIn = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_profile, container, false)
@@ -27,7 +28,7 @@ class ProfileFragment : Fragment() {
         val username = sp.getString("username", "")
         val password = sp.getString("password", "")
 
-      if(username == "" || password == ""){
+      if((username == "" || password == "") && !loggedIn){
            val intent = Intent(context, LoginActivity::class.java)
             resultLauncher.launch(intent)
         }
@@ -42,6 +43,7 @@ class ProfileFragment : Fragment() {
             val password = data?.getStringExtra("password")
             if (username != null && password != null) {
                 storeLoginCredentials(username, password)
+                loggedIn = true
             }
         }
     }

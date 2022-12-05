@@ -60,8 +60,8 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
     private lateinit var loadingIcon : ProgressBar
 
     private var mapReady = false
-    private val defaultLat = 34.2407
-    private val defaultLng = -118.5300
+    private var defaultLat = 34.2407
+    private var defaultLng = -118.5300
     private var setLocation = LatLng(defaultLat, defaultLng)
     private var setZoomLevel = 13.0f
 
@@ -89,7 +89,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
         loadingIcon = view?.findViewById(R.id.loading)!!
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(setLocation, setZoomLevel))
-        addCurrentLocation()
         loadNearestStations(setLocation, searchRadius)
         googleMap.setOnMarkerClickListener(this)
 
@@ -527,6 +526,11 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
                     val response = placesClient.awaitFindCurrentPlace(placeFields)
                     googleMap.animateCamera(CameraUpdateFactory.newLatLng(response.placeLikelihoods[0].place.latLng))
+                    defaultLat = response.placeLikelihoods[0].place.latLng.latitude;
+                    defaultLng = response.placeLikelihoods[0].place.latLng.longitude;
+                    setLocation = LatLng(defaultLat, defaultLng)
+                    addCurrentLocation();
+
 
                 } catch (e: Exception) {
 

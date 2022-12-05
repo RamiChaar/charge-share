@@ -10,6 +10,7 @@ import com.example.evchargingapp.databinding.ActivityLoginBinding
 import com.example.evchargingapp.databinding.ActivityRegisterBinding
 import com.example.evchargingapp.ui.profile.ProfileFragment
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.FirebaseApp
 
 class LoginActivity : AppCompatActivity() {
 
@@ -21,31 +22,28 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         binding.btnlogin.setOnClickListener {
             val email = binding.inputEmail.text.toString()
             val pass = binding.inputPassword.text.toString()
 
-
             if (email.isNotEmpty() && pass.isNotEmpty() ) {
 
+                firebaseAuth.signInWithEmailAndPassword(email , pass).addOnCompleteListener{
+                    if (it.isSuccessful) {
+                        val returnIntent = Intent()
 
-                    firebaseAuth.signInWithEmailAndPassword(email , pass).addOnCompleteListener{
-                        if (it.isSuccessful) {
-                            val returnIntent = Intent()
+                        returnIntent.putExtra("username", email)
+                        returnIntent.putExtra("password", pass)
 
-                            returnIntent.putExtra("username", email)
-                            returnIntent.putExtra("password", pass)
+                        finish()
+                    }else{
+                        Toast.makeText(this, it.exception.toString() , Toast.LENGTH_SHORT).show()
 
-                            finish()
-                        }else{
-                            Toast.makeText(this, it.exception.toString() , Toast.LENGTH_SHORT).show()
-
-                        }
                     }
-                } else {
-                    Toast.makeText(this, "Empty Fields Are not Allowed !", Toast.LENGTH_SHORT).show()
                 }
+            } else {
+                Toast.makeText(this, "Empty Fields Are not Allowed !", Toast.LENGTH_SHORT).show()
+            }
 
         }
         binding.textViewSignUp.setOnClickListener {
