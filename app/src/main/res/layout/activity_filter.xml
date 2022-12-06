@@ -36,7 +36,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            app:trackTint="@drawable/new_track"
+            app:thumbTint="@drawable/new_thumb"/>
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/showInactive"
@@ -48,7 +50,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            app:trackTint="@drawable/new_track"
+            app:thumbTint="@drawable/new_thumb"/>
 
         <TextView
             android:id="@+id/levelsTitle"
@@ -59,7 +63,7 @@
             app:layout_constraintBottom_toTopOf="@+id/level1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="16dp"/>
+            android:layout_marginStart="16dp" />
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/level1"
@@ -71,7 +75,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            app:trackTint="@drawable/new_track"
+            app:thumbTint="@drawable/new_thumb"/>
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/level2"
@@ -83,7 +89,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            app:trackTint="@drawable/new_track"
+            app:thumbTint="@drawable/new_thumb"/>
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/level3"
@@ -95,7 +103,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            app:trackTint="@drawable/new_track"
+            app:thumbTint="@drawable/new_thumb"/>
 
         <TextView
             android:id="@+id/connectorsTitle"
@@ -119,7 +129,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            app:trackTint="@drawable/new_track"
+            app:thumbTint="@drawable/new_thumb"/>
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/J1772COMBO"
             android:layout_width="fill_parent"
@@ -130,7 +142,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            app:trackTint="@drawable/new_track"
+            app:thumbTint="@drawable/new_thumb"/>
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/TESLA"
             android:layout_width="fill_parent"
@@ -141,7 +155,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            app:trackTint="@drawable/new_track"
+            app:thumbTint="@drawable/new_thumb"/>
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/CHADEMO"
             android:layout_width="fill_parent"
@@ -152,7 +168,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            app:trackTint="@drawable/new_track"
+            app:thumbTint="@drawable/new_thumb"/>
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/NEMA1450"
             android:layout_width="fill_parent"
@@ -163,7 +181,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            app:trackTint="@drawable/new_track"
+            app:thumbTint="@drawable/new_thumb"/>
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/NEMA515"
             android:layout_width="fill_parent"
@@ -174,7 +194,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            app:trackTint="@drawable/new_track"
+            app:thumbTint="@drawable/new_thumb"/>
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/NEMA520"
             android:layout_width="fill_parent"
@@ -185,6 +207,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            app:trackTint="@drawable/new_track"
+            app:thumbTint="@drawable/new_thumb"/>
     </LinearLayout>
 </ScrollView>
