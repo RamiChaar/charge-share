@@ -26,6 +26,9 @@ class LoginActivity : AppCompatActivity() {
         firebaseAuth = Firebase.auth;
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        supportActionBar?.hide()
+
         binding.btnlogin.setOnClickListener {
             val email = binding.inputEmail.text.toString()
             val pass = binding.inputPassword.text.toString()
