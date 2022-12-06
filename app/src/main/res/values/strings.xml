@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">EV Charging App</string>
+    <string name="app_name">ChargeShare</string>
     <string name="title_map">Map</string>
     <string name="title_profile">Profile</string>
-    <string name="title_activity">EV Charging App</string>
+    <string name="title_activity">ChargeShare</string>
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyCXVQ4Q5NKkIyp9Om-huwTbI02HbZFom5M</string>
     <string name="charger_levels">Charger Levels:</string>
     <string name="connector_types">Connector Types:</string>
