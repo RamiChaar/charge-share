@@ -55,7 +55,7 @@
         app:layout_constraintTop_toBottomOf="@+id/addressInput" />
 
     <EditText
-        android:id="@+id/TimeIn"
+        android:id="@+id/timeIn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="55dp"
@@ -67,7 +67,7 @@
         app:layout_constraintTop_toBottomOf="@+id/chargerTypeIn" />
 
     <EditText
-        android:id="@+id/PriceIn"
+        android:id="@+id/priceIn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="55dp"
@@ -76,15 +76,15 @@
         android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/TimeIn" />
+        app:layout_constraintTop_toBottomOf="@+id/timeIn" />
 
     <Button
-        android:id="@+id/submitbutton"
+        android:id="@+id/submitButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Submit"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/PriceIn" />
+        app:layout_constraintTop_toBottomOf="@+id/priceIn" />
 </androidx.constraintlayout.widget.ConstraintLayout>

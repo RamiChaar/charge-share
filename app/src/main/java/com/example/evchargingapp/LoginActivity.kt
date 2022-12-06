@@ -29,6 +29,13 @@ class LoginActivity : AppCompatActivity() {
 
         supportActionBar?.hide()
 
+        binding.guestButton.setOnClickListener {
+            val returnIntent = Intent()
+            returnIntent.putExtra("username", "Guest")
+            returnIntent.putExtra("password", "Guest")
+            setResult(1, returnIntent)
+            finish()
+        }
         binding.btnlogin.setOnClickListener {
             val email = binding.inputEmail.text.toString()
             val pass = binding.inputPassword.text.toString()
