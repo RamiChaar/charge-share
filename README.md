@@ -32,9 +32,15 @@ When you open charge share you will be asked to share your location before being
 
 ### Searching a location
 
+https://user-images.githubusercontent.com/99862145/209423496-d760136a-0023-4394-973a-71c817fd5cc1.mp4
+
 ### Filtering stations and viewing station info
 
+https://user-images.githubusercontent.com/99862145/209423513-c5b024ac-a03f-42f6-a45d-a42741bda626.mp4
+
 ### Creating and viewing a custom made charger (Beta)
+
+https://user-images.githubusercontent.com/99862145/209423619-54348f99-efe1-45c0-89a0-558a66fa8ec1.mp4
 
 ## Tools and framework used
 
