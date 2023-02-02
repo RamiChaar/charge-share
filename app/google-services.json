@@ -1,41 +1,33 @@
 {
   "project_info": {
-    "project_number": "969557890503",
-    "project_id": "ev-charging-app-943fc",
-    "storage_bucket": "ev-charging-app-943fc.appspot.com"
+    "project_number": "96861294856",
+    "project_id": "chargeshare-5a269",
+    "storage_bucket": "chargeshare-5a269.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:969557890503:android:c4185cf517aa5ebf4235e2",
+        "mobilesdk_app_id": "1:96861294856:android:82644adef3611253f75cbd",
         "android_client_info": {
           "package_name": "com.example.evchargingapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "969557890503-d1sg9d75069hdhjvcsjlm8u6g33ok4hj.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.evchargingapp",
-            "certificate_hash": "a5cc26366af8b2db301e507cb88936e8429e80a0"
-          }
-        },
-        {
-          "client_id": "969557890503-a2sft1ms2ao84lhd64pqud7q81ljripe.apps.googleusercontent.com",
+          "client_id": "96861294856-s085pcf5e8smetvo5tli953s3drfs821.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDP6KSKit2VBKtlbmUXk0r-UyXMdFV6So8"
+          "current_key": "AIzaSyANHKDzmWTGOYnADtNp49PqeOTFhv_wMno"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "969557890503-a2sft1ms2ao84lhd64pqud7q81ljripe.apps.googleusercontent.com",
+              "client_id": "96861294856-s085pcf5e8smetvo5tli953s3drfs821.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
