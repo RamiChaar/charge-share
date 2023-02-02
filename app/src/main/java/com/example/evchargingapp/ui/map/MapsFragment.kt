@@ -109,11 +109,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             loadedStations.clear()
             addCurrentLocation()
             loadNearestStations(googleMap.cameraPosition.target, searchRadius)
-            var station = Station(32456, 34.305430, -118.474700, "Carlos Custom Marker",
-                "E", "custom", immutableListOf("TESLA"), 0, 1, 0);
-            var fuelStations = immutableListOf(station)
-            var customStation = NearestStations(1, fuelStations)
-            loadMarkers(customStation);
         }
         val filterButton = view?.findViewById<ImageButton>(R.id.filterButton)!!
         filterButton.setOnClickListener {
