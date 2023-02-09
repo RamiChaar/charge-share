@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bb"
     tools:context=".ui.profile.ProfileFragment">
 
     <Button
@@ -24,11 +25,12 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="45dp"
         android:text="Welcome!"
+        android:textColor="@color/white"
         android:textSize="34sp"
+        app:layout_constraintBottom_toTopOf="@+id/UsernameText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/UsernameText"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/UsernameText"
@@ -36,11 +38,12 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="-60dp"
         android:text="Guest"
+        android:textColor="@color/white"
         android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/RentMyChargerButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/WelcomeText"
-        app:layout_constraintBottom_toTopOf="@+id/RentMyChargerButton"/>
+        app:layout_constraintTop_toBottomOf="@+id/WelcomeText" />
 
     <Button
         android:id="@+id/RentMyChargerButton"
