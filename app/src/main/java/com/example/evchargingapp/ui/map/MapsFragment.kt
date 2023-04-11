@@ -1,5 +1,6 @@
 package com.example.evchargingapp.ui.map
 
+import StationRenderer
 import android.Manifest.permission.*
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -11,17 +12,13 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
-import android.location.Geocoder
 import android.os.Bundle
-import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
@@ -29,8 +26,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.evchargingapp.*
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -46,15 +41,19 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
 import okhttp3.*
-import okhttp3.internal.immutableListOf
 import java.io.IOException
-import java.util.*
 import kotlin.math.min
 import kotlin.math.pow
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.maps.android.clustering.ClusterManager
+import com.google.android.gms.maps.model.LatLng
 
 
-class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
+class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener, ClusterManager.OnClusterItemInfoWindowClickListener<Station> {
 
+    private lateinit var clusterManager: ClusterManager<Station>
     private lateinit var placesClient: PlacesClient
     private lateinit var googleMap: GoogleMap
     private lateinit var refreshButton : ImageButton
@@ -75,6 +74,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
     private var connectors = mutableListOf("J1772", "J1772COMBO", "TESLA", "CHADEMO", "NEMA1450", "NEMA515", "NEMA520")
     private var showPrivate = true
     private var showInactive = true
+    private var clusteringInProgress = false
 
     private val callback = OnMapReadyCallback { googleMap ->
         Log.i("MapsFragment", "onMapReadyCallback")
@@ -93,6 +93,23 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         loadNearestStations(setLocation, searchRadius)
         googleMap.setOnMarkerClickListener(this)
 
+        clusterManager = ClusterManager<Station>(context, googleMap)
+        val stationRenderer = StationRenderer(requireContext(), googleMap, clusterManager)
+        clusterManager.renderer = stationRenderer
+        //googleMap.setOnCameraIdleListener(clusterManager)
+        //googleMap.setOnMarkerClickListener(clusterManager.markerManager)
+        googleMap.setOnInfoWindowClickListener(clusterManager.markerManager)
+        clusterManager.setOnClusterItemInfoWindowClickListener(this)
+
+        addCurrentLocation()
+        googleMap.setOnCameraMoveStartedListener {
+
+        }
+
+        googleMap.setOnCameraMoveListener {
+            clusterManager.cluster()
+        }
+
         googleMap.setOnCameraIdleListener {
             val center = googleMap.cameraPosition.target
             val zoom = googleMap.cameraPosition.zoom
@@ -105,10 +122,16 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
         refreshButton = view?.findViewById(R.id.refreshButton)!!
         refreshButton.setOnClickListener {
-            googleMap.clear()
-            loadedStations.clear()
-            addCurrentLocation()
-            loadNearestStations(googleMap.cameraPosition.target, searchRadius)
+            try {
+                Log.d("RefreshButton", "Button clicked")
+                googleMap.clear()
+                loadedStations.clear()
+                addCurrentLocation()
+                loadNearestStations(googleMap.cameraPosition.target, searchRadius)
+                Log.d("RefreshButton", "Refresh completed")
+            } catch (e: Exception) {
+                Log.e("RefreshButton", "Error during refresh", e)
+            }
         }
         val filterButton = view?.findViewById<ImageButton>(R.id.filterButton)!!
         filterButton.setOnClickListener {
@@ -135,14 +158,23 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
         }
 
-        googleMap.setOnInfoWindowClickListener { marker ->
+        /*googleMap.setOnInfoWindowClickListener { marker ->
             val id = marker.tag
             Log.i("marker $id", "Info Window Clicked")
             val intent = Intent(context, StationInfoActivity::class.java)
             intent.putExtra("id", id.toString())
             Log.e("launching info for", id.toString())
             stationInfoLauncher.launch(intent)
-        }
+        }*/
+    }
+
+    override fun onClusterItemInfoWindowClick(item: Station) {
+        val id = item.id
+        Log.i("marker $id", "Info Window Clicked")
+        val intent = Intent(context, StationInfoActivity::class.java)
+        intent.putExtra("id", id.toString())
+        Log.e("launching info for", id.toString())
+        stationInfoLauncher.launch(intent)
     }
 
     override fun onResume() {
@@ -192,22 +224,14 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
     }
 
     private fun loadMarkers(newNearestStations: NearestStations) {
-        val defaultMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_default_marker) }
-        val customMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_custom_marker) }
-        val inactiveMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_inactive_marker) }
-        val privateMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_private_marker) }
-        val levelOneMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level1_marker) }
-        val levelTwoMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level2_marker) }
-        val levelThreeMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level3_marker) }
+        //clusterManager.clearItems()
 
         val currIds = mutableListOf<Int>()
         loadedStations.forEach { station ->
             currIds.add(station.id)
         }
-
-        var marker : Marker?
-        for(station in newNearestStations.fuel_stations) {
-            if(currIds.contains(station.id)){
+        for (station in newNearestStations.fuel_stations) {
+            if (currIds.contains(station.id)) {
                 continue
             }
             loadedStations.add(station)
@@ -215,23 +239,23 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             var hasOneLevel = false
             var hasOneConnector = false
             val levelsInStation = mutableListOf("")
-            if(station.ev_level1_evse_num > 0){
+            if (station.ev_level1_evse_num > 0) {
                 levelsInStation.add("ev_level1_evse_num")
             }
-            if(station.ev_level2_evse_num > 0){
+            if (station.ev_level2_evse_num > 0) {
                 levelsInStation.add("ev_level2_evse_num")
             }
-            if(station.ev_dc_fast_num > 0){
+            if (station.ev_dc_fast_num > 0) {
                 levelsInStation.add("ev_dc_fast_num")
             }
 
-            for(level in levelsInStation){
-                if(levels.contains(level)) {
+            for (level in levelsInStation) {
+                if (levels.contains(level)) {
                     hasOneLevel = true
                 }
             }
 
-            if(station.ev_connector_types == null) {
+            if (station.ev_connector_types == null) {
                 hasOneConnector = true
             } else {
                 for (connector in station.ev_connector_types) {
@@ -241,64 +265,26 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
                 }
             }
 
-            if(!hasOneLevel || !hasOneConnector){
+            if (!hasOneLevel || !hasOneConnector) {
                 continue
             }
 
-            if(!showPrivate && station.access_code == "private"){
+            if (!showPrivate && station.access_code == "private") {
                 continue
             }
 
-            if(!showInactive && station.status_code != "E"){
+            if (!showInactive && station.status_code != "E") {
                 continue
             }
 
-            marker = googleMap.addMarker(MarkerOptions().position(LatLng(station.latitude, station.longitude)).title(station.station_name))
-            marker?.tag = station.id
-            marker?.setIcon(defaultMarker)
-
-            var snippetString = ""
-
-
-            if(station.status_code != "E") {
-                marker?.setIcon(inactiveMarker)
-                snippetString += "Status: Inactive"
-            } else if(station.access_code == "custom") {
-                marker?.setIcon(customMarker)
-                snippetString += "Address: 15764 Larkspur St, Sylmar, CA 91342"
-                snippetString += "\nStatus: Active (custom)"
-                snippetString += "\nAccess: Public"
-                snippetString += "\nLevel: Level 2"
-            } else if(station.access_code == "private") {
-                marker?.setIcon(privateMarker)
-                snippetString += "Status: Active"
-                snippetString += "\nAccess: Private"
-                snippetString += "\nLevel: Fast (Level3)"
-            } else if(station.ev_dc_fast_num > 0) {
-                marker?.setIcon(levelThreeMarker)
-                snippetString += "Status: Active"
-                snippetString += "\nAccess: Public"
-                snippetString += "\nLevel: Fast (Level3)"
-            } else if(station.ev_level2_evse_num > 0) {
-                marker?.setIcon(levelTwoMarker)
-                snippetString += "Status: Active"
-                snippetString += "\nAccess: Public"
-                snippetString += "\nLevel: Level 2"
-            } else if(station.ev_level1_evse_num > 0) {
-                marker?.setIcon(levelOneMarker)
-                snippetString += "Status: Active"
-                snippetString += "\nAccess: Public"
-                snippetString += "\nLevel: Level 1"
-            } else {
-                marker?.setIcon(defaultMarker)
-                snippetString += "Details Unknown"
-            }
-
-            marker?.snippet = snippetString
+            clusterManager.addItem(station)
         }
+
+        //clusterManager.cluster()
         loadingIcon.visibility = View.INVISIBLE
         Log.i("loading", "markers loaded")
     }
+
 
     private fun addCurrentLocation() {
         val locationMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_location_marker) }
@@ -565,3 +551,4 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 }
+

@@ -1,17 +1,53 @@
 package com.example.evchargingapp
 
-class SingleStation (val id: Int, val latitude : Double, val longitude : Double, var station_name : String, var status_code : String, var access_code : String, var ev_connector_types : List<String>, var ev_level1_evse_num : Int, var ev_level2_evse_num : Int, var ev_dc_fast_num : Int, var state : String, var city : String, var street_address : String, var zip : String, var country : String, var ev_network : String, var access_days_time : String, var station_phone : String, var intersection_directions : String, var ev_pricing : String, var ev_network_web : String) {
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.clustering.ClusterItem
 
-    //id
-    //latitude
-    //longitude
-    //station_name
-    //status_code
-    //access_code
-    //ev_connector_types
-    //ev_level1_evse_num
-    //ev_level2_evse_num
-    //ev_dc_fast_num
+data class SingleStation (
+    val id: Int,
+    val latitude : Double,
+    val longitude : Double,
+    var station_name : String,
+    var status_code : String,
+    var access_code : String,
+    var ev_connector_types : List<String>,
+    var ev_level1_evse_num : Int,
+    var ev_level2_evse_num : Int,
+    var ev_dc_fast_num : Int,
+    var state : String,
+    var city : String,
+    var street_address : String,
+    var zip : String,
+    var country : String,
+    var ev_network : String,
+    var access_days_time : String,
+    var station_phone : String,
+    var intersection_directions : String,
+    var ev_pricing : String,
+    var ev_network_web : String) : ClusterItem {
+
+    private val latLng = LatLng(latitude, longitude)
+
+    override fun getPosition(): LatLng =
+        latLng
+
+    override fun getTitle(): String =
+        station_name
+
+    override fun getSnippet(): String =
+        street_address
+}
+
+//id
+//latitude
+//longitude
+//station_name
+//status_code
+//access_code
+//ev_connector_types
+//ev_level1_evse_num
+//ev_level2_evse_num
+//ev_dc_fast_num
 
 //    access_days_time": "24 hours daily",
 //    "station_phone": "855-900-7584",
@@ -26,5 +62,3 @@ class SingleStation (val id: Int, val latitude : Double, val longitude : Double,
 //    "ev_network": "SHELL_RECHARGE",
 //    ev_pricing
 //    ev_network_web
-
-}
