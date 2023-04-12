@@ -77,7 +77,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
     private var showInactive = true
 
     private val callback = OnMapReadyCallback { googleMap ->
-        Log.i("MapsFragment", "onMapReadyCallback")
+        Log.d("debug", "MapsFragment: onMapReadyCallback")
         this.googleMap = googleMap
         mapReady = true
 
@@ -99,8 +99,8 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             searchRadius = min(16.0, 2.0.pow((14.5 - zoom)))
             loadNearestStations(center, searchRadius)
 
-            Log.i("camera moved to: ", center.toString())
-            Log.i("search radius: ", searchRadius.toString())
+            Log.d("debug", "camera moved to: " + center.toString())
+            Log.d("debug", "search radius: " +  searchRadius.toString())
         }
 
         refreshButton = view?.findViewById(R.id.refreshButton)!!
@@ -137,17 +137,17 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
         googleMap.setOnInfoWindowClickListener { marker ->
             val id = marker.tag
-            Log.i("marker $id", "Info Window Clicked")
+            Log.d("debug", "marker $id" +  " info Window Clicked")
             val intent = Intent(context, StationInfoActivity::class.java)
             intent.putExtra("id", id.toString())
-            Log.e("launching info for", id.toString())
+            Log.d("debug", "launching info for " +  id.toString())
             stationInfoLauncher.launch(intent)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        Log.i("MapsFragment", "onResume")
+        Log.d("debug", "MapsFragment: " + "onResume")
 
     }
 
@@ -168,7 +168,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         val client = OkHttpClient()
 
         loadingIcon.visibility = View.VISIBLE
-        Log.i("loading", "response requested")
+        Log.d("debug", "loading: " +  "response requested")
         //make API call to client
         client.newCall(request).enqueue(object: Callback {
             override fun onResponse(call: Call, response: Response) {
@@ -180,7 +180,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
                 //load markers on the main thread
                 activity?.runOnUiThread {
-                    Log.i("loading", "response fetched")
+                    Log.d("debug", "loading: " +  "response fetched")
                     loadMarkers(newNearestStations)
                 }
 
@@ -297,7 +297,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             marker?.snippet = snippetString
         }
         loadingIcon.visibility = View.INVISIBLE
-        Log.i("loading", "markers loaded")
+        Log.d("debug", "loading: " + "markers loaded")
     }
 
     private fun addCurrentLocation() {
@@ -312,7 +312,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             return true
         }
         val id = marker.tag as? Int
-        println("Marker $id has been clicked on.")
+        Log.d("debug", "Marker $id has been clicked on.")
         marker.showInfoWindow()
         return true
     }
@@ -417,7 +417,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
                 Activity.RESULT_OK -> {
                     data?.let {
                         val place = Autocomplete.getPlaceFromIntent(data)
-                        Log.i(ContentValues.TAG, "Place: ${place.name}, ${place.id}")
+                        Log.d("debug", ContentValues.TAG +  " place: ${place.name}, ${place.id}")
 
                         googleMap.clear()
                         loadedStations.clear()
@@ -450,14 +450,14 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        Log.i("MapsFragment", "onCreateView")
+        Log.d("debug", "MapsFragment: " + "onCreateView")
         val view = inflater.inflate(R.layout.fragment_maps, container, false)
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.i("MapsFragment", "onViewCreated")
+        Log.d("debug", "MapsFragment: " + "onViewCreated")
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
 
@@ -548,7 +548,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
                 }
             }
         } else {
-            Log.d(TAG, "LOCATION permission not granted")
+            Log.d("debug", TAG + ": LOCATION permission not granted")
             checkPermissionThenFindCurrentPlace()
 
         }
