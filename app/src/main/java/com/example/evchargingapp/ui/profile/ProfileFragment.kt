@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import com.example.evchargingapp.LoginActivity
 import com.example.evchargingapp.R
 import com.example.evchargingapp.rentHomeCharging
+import com.google.firebase.auth.FirebaseAuth
 
 
 class ProfileFragment : Fragment() {
@@ -27,8 +28,6 @@ class ProfileFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_profile, container, false)
         usernameText = view.findViewById<TextView>(R.id.UsernameText)
         val rentMyChargerButton = view.findViewById<Button>(R.id.RentMyChargerButton)
-        val reportButton = view.findViewById<Button>(R.id.ReportButton)
-        val addCarButton = view.findViewById<Button>(R.id.AddCarButton)
         val logOutButton = view.findViewById<Button>(R.id.LogOutButton)
 
         sp = container?.context?.getSharedPreferences("Login", MODE_PRIVATE) as SharedPreferences
@@ -46,15 +45,8 @@ class ProfileFragment : Fragment() {
             resultLauncher.launch(intent)
         }
 
-        reportButton.setOnClickListener {
-            //TO DO
-        }
-
-        addCarButton.setOnClickListener {
-            //TO DO
-        }
-
         logOutButton.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
             clearLoginCredentials()
             val intent = Intent(context, LoginActivity::class.java)
             resultLauncher.launch(intent)
