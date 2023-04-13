@@ -8,11 +8,13 @@ import android.view.MenuItem
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
 import kotlin.properties.Delegates
-
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 
 class StationInfoActivity : AppCompatActivity() {
 
@@ -22,8 +24,39 @@ class StationInfoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_station_info)
-
+        val favoriteButton = findViewById<ImageButton>(R.id.favoriteButton)
         val navigateButton = findViewById<ImageButton>(R.id.navigateButton)
+
+        val intent = intent
+        val id = intent.getStringExtra("id")
+
+        val auth = FirebaseAuth.getInstance()
+        val db = FirebaseFirestore.getInstance()
+        val currentUser = auth.currentUser
+
+        var inFavorites = false
+
+        if (currentUser != null && id != null) {
+            val collectionRef = db.collection("FavoriteStations")
+            val query = collectionRef.whereEqualTo("UID", currentUser.uid).whereEqualTo("id", id)
+
+            query.get().addOnSuccessListener { querySnapshot ->
+                // Query snapshot contains all documents in the "users" collection
+                for (document in querySnapshot) {
+                    if(document.data["id"] == id &&  document.data["UID"] == currentUser.uid) {
+                        inFavorites = true
+                        favoriteButton.setBackgroundResource(R.drawable.favorite_button_selected)
+                    }
+                }
+            }.addOnFailureListener { e ->
+                // Handle errors
+                Log.e("debug", "Error getting documents", e)
+            }
+            Log.d("debug", "User UID: ${currentUser.uid}")
+        } else {
+            Log.d("debug", "No user is currently signed in.")
+        }
+
         navigateButton.setOnClickListener {
             val intent = Intent(
                 Intent.ACTION_VIEW,
@@ -33,8 +66,38 @@ class StationInfoActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        val intent = intent
-        val id = intent.getStringExtra("id")
+        favoriteButton.setOnClickListener {
+            if(currentUser == null || id == null) {
+                return@setOnClickListener
+            }
+            val collectionRef = db.collection("FavoriteStations")
+            val query = collectionRef.whereEqualTo("UID", currentUser.uid).whereEqualTo("id", id)
+            if(!inFavorites) {
+                val newFavorite = hashMapOf(
+                    "UID" to currentUser.uid,
+                    "id" to id,
+                )
+                collectionRef.add(newFavorite)
+                favoriteButton.setBackgroundResource(R.drawable.favorite_button_selected)
+                inFavorites = true
+            } else {
+                query.get().addOnSuccessListener { querySnapshot ->
+                    // Delete documents that match the query
+                    for (documentSnapshot in querySnapshot.documents) {
+                        // Delete document
+                        documentSnapshot.reference.delete()
+                    }
+                }
+                favoriteButton.setBackgroundResource(R.drawable.favorite_button_unselected)
+                inFavorites = false
+            }
+        }
+
+        val reportButton = findViewById<ImageButton>(R.id.reportButton)
+        reportButton.setOnClickListener {
+            //to implement report button
+        }
+
         if (id != null) {
             getStation(id)
         }
@@ -45,7 +108,7 @@ class StationInfoActivity : AppCompatActivity() {
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()
 
-        Log.i("loading", "response requested")
+        Log.d("debug", "loading: " + "station response requested")
         //make API call to client
         client.newCall(request).enqueue(object: Callback {
             override fun onResponse(call: Call, response: Response) {
