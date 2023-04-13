@@ -115,6 +115,11 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             openFilterActivity()
         }
 
+        val favoriteButton = view?.findViewById<ImageButton>(R.id.favoriteButton)!!
+        favoriteButton.setOnClickListener {
+            openFavoriteActivity()
+        }
+
         placesClient = Places.createClient(context)
 
         val fields = listOf(Place.Field.ADDRESS, Place.Field.LAT_LNG)
@@ -130,9 +135,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
         val currentLocationButton = view?.findViewById<ImageButton>(R.id.currentLocationButton)!!
         currentLocationButton.setOnClickListener {
-
             checkPermissionThenFindCurrentPlace()
-
         }
 
         googleMap.setOnInfoWindowClickListener { marker ->
@@ -405,6 +408,17 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
                     connectors.add(allConnectors[i])
                 }
             }
+            refreshMarkers()
+        }
+    }
+
+    private fun openFavoriteActivity() {
+        val intent = Intent(context, FavoriteActivity::class.java)
+        favoriteLauncher.launch(intent)
+        activity?.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+    }
+    private var favoriteLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == 1) {
             refreshMarkers()
         }
     }

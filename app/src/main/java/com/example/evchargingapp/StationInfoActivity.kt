@@ -8,11 +8,11 @@ import android.view.MenuItem
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
 import kotlin.properties.Delegates
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
@@ -20,6 +20,13 @@ class StationInfoActivity : AppCompatActivity() {
 
     private var longitude by Delegates.notNull<Double>()
     private var latitude by Delegates.notNull<Double>()
+    private var name by Delegates.notNull<String>()
+    private var access by Delegates.notNull<String>()
+    private var status by Delegates.notNull<String>()
+    private var numLevelOne by Delegates.notNull<Int>()
+    private var numLevelTwo by Delegates.notNull<Int>()
+    private var numLevelThree by Delegates.notNull<Int>()
+    private var loaded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,15 +74,27 @@ class StationInfoActivity : AppCompatActivity() {
         }
 
         favoriteButton.setOnClickListener {
-            if(currentUser == null || id == null) {
+            if(currentUser == null || id == null || !loaded) {
                 return@setOnClickListener
             }
             val collectionRef = db.collection("FavoriteStations")
             val query = collectionRef.whereEqualTo("UID", currentUser.uid).whereEqualTo("id", id)
             if(!inFavorites) {
+                var levelString = ""
+                if(numLevelThree > 0) {
+                    levelString = "Fast (Level3)"
+                } else if(numLevelTwo > 0) {
+                    levelString = "Level 2"
+                } else if(numLevelOne > 0) {
+                    levelString = "Level 1"
+                }
                 val newFavorite = hashMapOf(
                     "UID" to currentUser.uid,
                     "id" to id,
+                    "name" to name,
+                    "access" to access,
+                    "status" to status,
+                    "level" to levelString
                 )
                 collectionRef.add(newFavorite)
                 favoriteButton.setBackgroundResource(R.drawable.favorite_button_selected)
@@ -95,7 +114,7 @@ class StationInfoActivity : AppCompatActivity() {
 
         val reportButton = findViewById<ImageButton>(R.id.reportButton)
         reportButton.setOnClickListener {
-            //to implement report button
+            //to implement - report button
         }
 
         if (id != null) {
@@ -125,6 +144,7 @@ class StationInfoActivity : AppCompatActivity() {
                 runOnUiThread {
                     Log.i("loading", "response fetched")
                     loadData(station)
+                    loaded = true
                 }
 
             }
@@ -147,14 +167,14 @@ class StationInfoActivity : AppCompatActivity() {
         val networkWebField = findViewById<TextView>(R.id.networkWeb)
 
 
-        var name = station.station_name
-        var access = station.access_code
-        var status = station.status_code
+        name = station.station_name
+        access = station.access_code
+        status = station.status_code
         var connectors = ""
         var connectorsTypes = station.ev_connector_types
-        var numLevelOne = station.ev_level1_evse_num
-        var numLevelTwo = station.ev_level2_evse_num
-        var numLevelThree = station.ev_dc_fast_num
+        numLevelOne = station.ev_level1_evse_num
+        numLevelTwo = station.ev_level2_evse_num
+        numLevelThree = station.ev_dc_fast_num
         var address = station.street_address + ", " + station.city + ", " + station.state
         var phoneNumber = station.station_phone
         var timeDetails = station.access_days_time
