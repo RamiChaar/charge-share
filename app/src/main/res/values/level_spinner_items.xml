@@ -1,0 +1,7 @@
+<resources>
+    <string-array name="level_spinner_items">
+        <item>Level 1</item>
+        <item>Level 2</item>
+        <item>Fast (Level 3)</item>
+    </string-array>
+</resources>

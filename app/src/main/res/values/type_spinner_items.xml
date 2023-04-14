@@ -1,0 +1,11 @@
+<resources>
+    <string-array name="type_spinner_items">
+        <item>J1772</item>
+        <item>J1772COMBO</item>
+        <item>Tesla</item>
+        <item>CHAdeMO</item>
+        <item>NEMA 14-50</item>
+        <item>NEMA 5-15</item>
+        <item>NEMA 5-20</item>
+    </string-array>
+</resources>
