@@ -40,7 +40,6 @@ class FavoriteActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowTitleEnabled(false);
         supportActionBar?.setDisplayHomeAsUpEnabled(true);
         supportActionBar?.setHomeButtonEnabled(true);
-
         setContentView(R.layout.activity_favorite)
 
         val auth = FirebaseAuth.getInstance()
@@ -121,6 +120,7 @@ class FavoriteActivity : AppCompatActivity() {
                     if(document.data["UID"] == currentUser.uid) {
                         val inflater = LayoutInflater.from(this)
                         val childLayout = inflater.inflate(R.layout.info_window, null)
+
                         val title = childLayout.findViewById<TextView>(R.id.title)
                         val snippet = childLayout.findViewById<TextView>(R.id.snippet)
                         childLayout.id = document.data["id"].toString().toInt()

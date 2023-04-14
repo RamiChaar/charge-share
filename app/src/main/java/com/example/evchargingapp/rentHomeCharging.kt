@@ -1,111 +1,98 @@
 package com.example.evchargingapp
 
 import android.content.Intent
+import android.content.res.Resources
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
-import android.widget.EditText
-import android.widget.Spinner
-import android.location.Geocoder
-import androidx.annotation.RequiresApi
-import java.io.IOException
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.GeoPoint
 
 class rentHomeCharging : AppCompatActivity() {
 
-    @RequiresApi(33)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_rent_home_charging)
         supportActionBar?.hide()
         val backButton = findViewById<Button>(R.id.backbutton);
-        val submitButton = findViewById<Button>(R.id.submitButton);
+        val addButton = findViewById<Button>(R.id.addButton);
 
-        val addressInput = findViewById<EditText>(R.id.addressInput);
-        val cityInput = findViewById<EditText>(R.id.cityInput);
-        val stateInput = findViewById<Spinner>(R.id.stateInput);
-        val chargerTypeIn = findViewById<Spinner>(R.id.chargerTypeIn);
-        val chargerLevel = findViewById<Spinner>(R.id.chargerLevel);
-        val priceIn = findViewById<EditText>(R.id.priceIn);
-
-        val auth = FirebaseAuth.getInstance()
-        val currentUser = auth.currentUser
-
-        if(currentUser == null) {
-            submitButton.isEnabled = false
-            submitButton.isClickable = false
-            submitButton.alpha = 0.5f
-        }
-        submitButton.setOnClickListener {
-
-            var charger = chargerTypeIn.selectedItem.toString()
-            var level = chargerLevel.selectedItem.toString()
-            var address = addressInput.text.toString()
-            var city = cityInput.text.toString()
-            var state = stateInput.selectedItem.toString()
-            var rate = priceIn.text.toString()
-
-            Log.d("debug", "charger: " + charger)
-            Log.d("debug", "level: " + level)
-            Log.d("debug", "address: " + address)
-            Log.d("debug", "rate: " + rate)
-            Log.d("debug", "city: " + city)
-            Log.d("debug", "state: " + state)
-
-            var queryAddress = "$address, $city, $state"
-            var location = getAddressLatLng(queryAddress, charger, level, rate)
-
-
-
-            priceIn.clearFocus()
-            addressInput.clearFocus()
-            cityInput.clearFocus()
-            chargerTypeIn.setSelection(0)
-            chargerLevel.setSelection(0)
-            stateInput.setSelection(0)
-            priceIn.text.clear()
-            addressInput.text.clear()
-            cityInput.text.clear()
-        }
         backButton.setOnClickListener {
             val returnIntent = Intent()
             setResult(1, returnIntent)
             finish()
         }
+        addButton.setOnClickListener {
+            val intent = Intent(this, AddCustomStation::class.java)
+            resultLauncher.launch(intent)
+        }
     }
 
-    @RequiresApi(33)
-    fun getAddressLatLng(address: String, charger: String, level: String, rate: String): Pair<Double, Double>? {
-        val geocoder = Geocoder(this)
-        val geocodeListener = Geocoder.GeocodeListener { addresses ->
-            val auth = FirebaseAuth.getInstance()
-            val currentUser = auth.currentUser
-            val db = FirebaseFirestore.getInstance()
+    private fun refresh() {
+        val auth = FirebaseAuth.getInstance()
+        val db = FirebaseFirestore.getInstance()
+        val currentUser = auth.currentUser
+        val customList = findViewById<LinearLayout>(R.id.customList)
+        customList.removeAllViews()
+
+        if(currentUser != null) {
             val collectionRef = db.collection("CustomStations")
+            val query = collectionRef.whereEqualTo("UID", currentUser.uid)
+            query.get().addOnSuccessListener { querySnapshot ->
+                var i = 0;
+                for (document in querySnapshot) {
+                    val inflater = LayoutInflater.from(this)
+                    val childLayout = inflater.inflate(R.layout.custom_station, null)
+                    val address = childLayout.findViewById<TextView>(R.id.address)
+                    val charger = childLayout.findViewById<TextView>(R.id.charger)
+                    val level = childLayout.findViewById<TextView>(R.id.level)
+                    val rate = childLayout.findViewById<TextView>(R.id.rate)
+                    val trashButton = childLayout.findViewById<ImageButton>(R.id.trashButton)
+                    childLayout.id = i++
 
-            if (addresses.isNotEmpty()) {
-                val lat = addresses[0].latitude
-                val lng = addresses[0].longitude
+                    address.text = document.data["Address"].toString()
+                    charger.text = "Charger Type: " + document.data["Charger"].toString()
+                    level.text = "Level: " + document.data["Level"].toString()
+                    rate.text = "Rate: $" + document.data["Rate"].toString() + "/hr"
 
-                val newCustomStation = hashMapOf(
-                    "UID" to currentUser?.uid,
-                    "Address" to address,
-                    "Charger" to charger,
-                    "Level" to level,
-                    "Location" to  GeoPoint(lat, lng)
-                )
-                collectionRef.add(newCustomStation)
+                    customList.addView(childLayout)
+                    Log.d("debug", childLayout.toString())
+
+                    trashButton.setOnClickListener {
+                        val docRef = collectionRef.document(document.id)
+                        docRef.delete()
+                        refresh()
+                    }
+                }
+            }.addOnFailureListener { e ->
+                Log.e("debug", "Error getting documents", e)
             }
         }
-        try {
-            geocoder.getFromLocationName(address, 1, geocodeListener)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return null
     }
+
+    private fun Int.dpToPx(): Int {
+        return (this * Resources.getSystem().displayMetrics.density).toInt()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("debug", "FavoriteActivity: " + "onResume")
+        refresh()
+    }
+
+    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == 1) {
+            val data: Intent? = result.data
+        }
+    }
+
 }

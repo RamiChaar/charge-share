@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.Fragment
+import com.example.evchargingapp.AddCustomStation
 import com.example.evchargingapp.LoginActivity
 import com.example.evchargingapp.R
 import com.example.evchargingapp.rentHomeCharging
@@ -64,7 +65,6 @@ class ProfileFragment : Fragment() {
             if (username != null && password != null) {
                 storeLoginCredentials(username, password)
             }
-
         }
     }
 
