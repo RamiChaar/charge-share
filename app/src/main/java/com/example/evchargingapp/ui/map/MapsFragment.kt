@@ -43,12 +43,17 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.ktx.api.net.awaitFindCurrentPlace
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
 import okhttp3.*
 import okhttp3.internal.immutableListOf
 import java.io.IOException
+import java.math.BigInteger
+import java.security.MessageDigest
 import java.util.*
+import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -91,6 +96,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         loadingIcon = view?.findViewById(R.id.loading)!!
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(setLocation, setZoomLevel))
         loadNearestStations(setLocation, searchRadius)
+        loadNearestCustomStations()
         googleMap.setOnMarkerClickListener(this)
 
         googleMap.setOnCameraIdleListener {
@@ -98,6 +104,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             val zoom = googleMap.cameraPosition.zoom
             searchRadius = min(16.0, 2.0.pow((14.5 - zoom)))
             loadNearestStations(center, searchRadius)
+            loadNearestCustomStations()
 
             Log.d("debug", "camera moved to: " + center.toString())
             Log.d("debug", "search radius: " +  searchRadius.toString())
@@ -114,7 +121,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         filterButton.setOnClickListener {
             openFilterActivity()
         }
-
         val favoriteButton = view?.findViewById<ImageButton>(R.id.favoriteButton)!!
         favoriteButton.setOnClickListener {
             openFavoriteActivity()
@@ -151,7 +157,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
     override fun onResume() {
         super.onResume()
         Log.d("debug", "MapsFragment: " + "onResume")
-
     }
 
     private fun refreshMarkers() {
@@ -266,13 +271,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             if(station.status_code != "E") {
                 marker?.setIcon(inactiveMarker)
                 snippetString += "Status: Inactive"
-            } else if(station.access_code == "custom") {
-                marker?.setIcon(customMarker)
-                snippetString += "Address: 15764 Larkspur St, Sylmar, CA 91342"
-                snippetString += "\nStatus: Active (custom)"
-                snippetString += "\nAccess: Public"
-                snippetString += "\nLevel: Level 2"
-            } else if(station.access_code == "private") {
+            }  else if(station.access_code == "private") {
                 marker?.setIcon(privateMarker)
                 snippetString += "Status: Active"
                 snippetString += "\nAccess: Private"
@@ -301,6 +300,60 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         }
         loadingIcon.visibility = View.INVISIBLE
         Log.d("debug", "loading: " + "markers loaded")
+    }
+
+    private fun loadNearestCustomStations() {
+        val visibleRegion = googleMap.projection.visibleRegion
+
+        val northeast = visibleRegion.latLngBounds.northeast
+        val southwest = visibleRegion.latLngBounds.southwest
+
+        Log.d("debug", "northeast: " + northeast.toString())
+        Log.d("debug", "southwest: " + southwest.toString())
+
+        val northeastLat = northeast.latitude
+        val northeastLng = northeast.longitude
+        val southwestLat = southwest.latitude
+        val southwestLng = southwest.longitude
+
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("CustomStations")
+            .whereGreaterThan("Latitude", southwestLat)
+            .whereLessThan("Latitude", northeastLat)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val customMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_custom_marker) }
+                for (document in querySnapshot.documents) {
+                    Log.d("debug", document.data.toString())
+                    var lng = document.data?.get("Longitude") as Double
+                    var lat = document.data?.get("Latitude") as Double
+
+                    if(lng < southwestLng || lng > northeastLng){
+                        continue;
+                    }
+
+                    var address = document.data?.get("Address").toString()
+                    var charger = document.data?.get("Charger").toString()
+                    var level = document.data?.get("Level").toString()
+                    var rate = document.data?.get("Rate").toString()
+                    var owner = document.data?.get("Owner").toString()
+                    var id : Long = document.data?.get("id") as Long
+                    var snippetString = ""
+                    snippetString += "Owner: $owner"
+                    snippetString += "\nCharger Type: $charger"
+                    snippetString += "\nLevel: $level"
+                    snippetString += "\nRate: $$rate"
+
+                    var marker : Marker? = googleMap.addMarker(MarkerOptions().position(LatLng(lat, lng)).title(address.substringBefore(",")))
+                    marker?.tag = id
+                    marker?.setIcon(customMarker)
+                    marker?.snippet =snippetString
+                }
+            }
+            .addOnFailureListener { exception ->
+                // Handle any errors that occur during the query
+            }
     }
 
     private fun addCurrentLocation() {
@@ -508,10 +561,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
     }
 
     @SuppressLint("MissingPermission")
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>, grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         if (requestCode != PERMISSION_REQUEST_CODE) {
             super.onRequestPermissionsResult(
                 requestCode,

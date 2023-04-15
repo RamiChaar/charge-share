@@ -3,11 +3,14 @@ package com.example.evchargingapp
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Telephony
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
@@ -15,6 +18,7 @@ import kotlin.properties.Delegates
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import java.security.acl.Owner
 
 class StationInfoActivity : AppCompatActivity() {
 
@@ -23,6 +27,7 @@ class StationInfoActivity : AppCompatActivity() {
     private var name by Delegates.notNull<String>()
     private var access by Delegates.notNull<String>()
     private var status by Delegates.notNull<String>()
+    private var levelStr by Delegates.notNull<String>()
     private var numLevelOne by Delegates.notNull<Int>()
     private var numLevelTwo by Delegates.notNull<Int>()
     private var numLevelThree by Delegates.notNull<Int>()
@@ -81,12 +86,16 @@ class StationInfoActivity : AppCompatActivity() {
             val query = collectionRef.whereEqualTo("UID", currentUser.uid).whereEqualTo("id", id)
             if(!inFavorites) {
                 var levelString = ""
-                if(numLevelThree > 0) {
-                    levelString = "Fast (Level3)"
-                } else if(numLevelTwo > 0) {
-                    levelString = "Level 2"
-                } else if(numLevelOne > 0) {
-                    levelString = "Level 1"
+                if(id.length < 7){
+                    if(numLevelThree > 0) {
+                        levelString = "Fast (Level3)"
+                    } else if(numLevelTwo > 0) {
+                        levelString = "Level 2"
+                    } else if(numLevelOne > 0) {
+                        levelString = "Level 1"
+                    }
+                } else {
+                    levelString = levelStr
                 }
                 val newFavorite = hashMapOf(
                     "UID" to currentUser.uid,
@@ -117,9 +126,77 @@ class StationInfoActivity : AppCompatActivity() {
             //to implement - report button
         }
 
-        if (id != null) {
+        if (id != null && id.length < 7) {
             getStation(id)
+        } else if (id != null){
+            queryCustomStation(id);
         }
+    }
+
+    private fun queryCustomStation(id : String) {
+        val db = FirebaseFirestore.getInstance()
+        val collectionRef = db.collection("CustomStations")
+        collectionRef.whereEqualTo("id", id.toLong()).get().addOnSuccessListener { querySnapshot ->
+            for (document in querySnapshot.documents) {
+                val data = document.data
+                val address = data?.get("Address").toString()
+                val charger = data?.get("Charger").toString()
+                val level = data?.get("Level").toString()
+                val owner = data?.get("Owner").toString()
+                val rate = data?.get("Rate").toString()
+
+                val addressField = findViewById<TextView>(R.id.address)
+                val accessField = findViewById<TextView>(R.id.access)
+                val statusField = findViewById<TextView>(R.id.status)
+                val phoneTitle = findViewById<TextView>(R.id.phoneTitle)
+                val phoneField = findViewById<TextView>(R.id.phone)
+                val timeInfoTitle = findViewById<TextView>(R.id.timeInfoTitle)
+                val timeField = findViewById<TextView>(R.id.timeInfo)
+                val pricingInfoTitle = findViewById<TextView>(R.id.pricingInfoTitle)
+                val pricingField = findViewById<TextView>(R.id.pricingInfo)
+                val directionInfoTitle = findViewById<TextView>(R.id.directionInfoTitle)
+                val directionInfo = findViewById<TextView>(R.id.directionInfo)
+                val networkTitle = findViewById<TextView>(R.id.networkTitle)
+                val network = findViewById<TextView>(R.id.network)
+                val networkWebTitle = findViewById<TextView>(R.id.networkWebTitle)
+                val networkWeb = findViewById<TextView>(R.id.networkWeb)
+                val connectorsField = findViewById<TextView>(R.id.connectors)
+                val infoSection = findViewById<ConstraintLayout>(R.id.infoSection)
+
+                name = address.substringBefore(",")
+                levelStr = level
+                access = "custom - public"
+                status = "Functional"
+                addressField.text = address
+                accessField.text = access
+                statusField.text = status
+                phoneTitle.text = "Owner"
+                phoneField.text = owner
+                timeInfoTitle.text = "Rate"
+                timeField.text = "$$rate/hr"
+                pricingInfoTitle.visibility = View.GONE
+                pricingField.visibility = View.GONE
+                directionInfoTitle.visibility = View.GONE
+                directionInfo.visibility = View.GONE
+                networkTitle.visibility = View.GONE
+                network.visibility = View.GONE
+                networkWebTitle.visibility = View.GONE
+                networkWeb.visibility = View.GONE
+
+                connectorsField.text = "$charger $level x 1"
+
+                val viewActionBar = layoutInflater.inflate(R.layout.station_info_bar, null);
+                val toolBarLabel = viewActionBar.findViewById<androidx.appcompat.widget.AppCompatTextView>(R.id.toolBarTitle)
+                toolBarLabel.text = name
+                supportActionBar?.customView = viewActionBar;
+                supportActionBar?.setDisplayShowCustomEnabled(true);
+                supportActionBar?.setDisplayShowTitleEnabled(false);
+                supportActionBar?.setDisplayHomeAsUpEnabled(true);
+                supportActionBar?.setHomeButtonEnabled(true);
+                loaded = true
+            }
+        }
+
     }
 
     private fun getStation(id : String) {
@@ -154,7 +231,7 @@ class StationInfoActivity : AppCompatActivity() {
         })
     }
 
-    fun loadData(station: SingleStation) {
+    private fun loadData(station: SingleStation) {
         val accessField = findViewById<TextView>(R.id.access)
         val statusField = findViewById<TextView>(R.id.status)
         val connectorsField = findViewById<TextView>(R.id.connectors)
@@ -207,22 +284,26 @@ class StationInfoActivity : AppCompatActivity() {
         }
 
         var numTypes = 0
+        var addedConnectorString = ""
+        if(connectorsTypes.size == 1){
+            addedConnectorString = connectorsTypes.get(0)
+        }
         if(numLevelOne > 0) {
             numTypes += 1
-            connectors += "Level 1 x $numLevelOne"
+            connectors += "$addedConnectorString Level 1 x $numLevelOne"
         }
         if(numLevelTwo > 0) {
             if(numTypes > 0){
                 connectors += "\n"
             }
             numTypes += 1
-            connectors += "Level 2 x $numLevelTwo"
+            connectors += "$addedConnectorString Level 2 x $numLevelTwo"
         }
         if(numLevelThree > 0) {
             if(numTypes > 0){
                 connectors += "\n"
             }
-            connectors += "Fast (Level 3) x $numLevelThree"
+            connectors += "$addedConnectorString Fast (Level 3) x $numLevelThree"
         }
 
         accessField.text = access

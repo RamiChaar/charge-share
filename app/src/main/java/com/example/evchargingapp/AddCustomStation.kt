@@ -14,6 +14,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.GeoPoint
+import java.math.BigInteger
+import java.security.MessageDigest
+import kotlin.math.abs
 
 class AddCustomStation : AppCompatActivity() {
 
@@ -79,7 +82,7 @@ class AddCustomStation : AppCompatActivity() {
     }
 
     @RequiresApi(33)
-    fun getAddressLatLng(address: String, charger: String, level: String, rate: String): Pair<Double, Double>? {
+    private fun getAddressLatLng(address: String, charger: String, level: String, rate: String): Pair<Double, Double>? {
         val geocoder = Geocoder(this)
         val geocodeListener = Geocoder.GeocodeListener { addresses ->
             val auth = FirebaseAuth.getInstance()
@@ -93,14 +96,24 @@ class AddCustomStation : AppCompatActivity() {
 
                 val newCustomStation = hashMapOf(
                     "UID" to currentUser?.uid,
+                    "Owner" to currentUser?.email?.substringBefore("@"),
                     "Address" to address,
                     "Charger" to charger,
                     "Level" to level,
                     "Rate" to rate,
-                    "Location" to  GeoPoint(lat, lng)
-
+                    "Latitude" to lat,
+                    "Longitude" to lng
                 )
-                collectionRef.add(newCustomStation)
+                collectionRef.add(newCustomStation).addOnSuccessListener { documentReference ->
+                    // Get the generated document ID
+                    val docId = documentReference.id
+
+                    // Update the document with the intId field
+                    val updateData = hashMapOf(
+                        "id" to didToUniqueInt(docId)
+                    )
+                    collectionRef.document(documentReference.id).update(updateData as Map<String, Any>)
+                }
                 val returnIntent = Intent()
                 setResult(1, returnIntent)
                 finish()
@@ -112,5 +125,23 @@ class AddCustomStation : AppCompatActivity() {
             e.printStackTrace()
         }
         return null
+    }
+
+    private fun didToUniqueInt(did: String): Int {
+        // Convert the UID string to bytes
+        val uidBytes = did.toByteArray()
+
+        // Compute the MD5 hash of the UID bytes
+        val md5 = MessageDigest.getInstance("MD5")
+        val digest = md5.digest(uidBytes)
+
+        // Convert the digest bytes to a BigInteger
+        val bigInt = BigInteger(1, digest)
+
+        // Get the absolute value of the BigInteger as an Int
+        val uniqueInt = abs(bigInt.toInt())
+
+        // Return the unique integer
+        return uniqueInt
     }
 }
