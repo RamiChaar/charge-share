@@ -1,67 +1,34 @@
 package com.example.evchargingapp.ui.map
 
-import android.Manifest.permission.*
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.ContentValues
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
-import android.location.Geocoder
 import android.os.Bundle
-import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.ProgressBar
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresPermission
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import com.example.evchargingapp.*
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
-import com.google.android.libraries.places.api.net.PlacesClient
-import com.google.android.libraries.places.ktx.api.net.awaitFindCurrentPlace
-import com.google.android.libraries.places.widget.Autocomplete
-import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.gson.GsonBuilder
-import kotlinx.coroutines.launch
+import com.google.maps.android.clustering.ClusterManager
 import okhttp3.*
-import okhttp3.internal.immutableListOf
 import java.io.IOException
-import java.math.BigInteger
-import java.security.MessageDigest
-import java.util.*
-import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
-import com.google.maps.android.clustering.ClusterManager
-import com.google.maps.android.clustering.ClusterItem
 
 
-
-class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
+class MapsFragment : Fragment(){
 
     private lateinit var clusterManager: ClusterManager<StationClusterItem>
     private lateinit var clusterItemClickListener: ClusterManager.OnClusterItemClickListener<StationClusterItem>
@@ -73,7 +40,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
     private var setLocation = LatLng(defaultLat, defaultLng)
     private var setZoomLevel = 13.0f
 
-    private var searchRadius = 4.0
+    private var searchRadius = 70.0
 
     private val loadedStations = mutableListOf<Station>()
     private val allLevels = mutableListOf("ev_level1_evse_num", "ev_level2_evse_num", "ev_dc_fast_num")
@@ -98,7 +65,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(setLocation, setZoomLevel))
         loadNearestStations(setLocation, searchRadius)
         loadNearestCustomStations()
-        googleMap.setOnMarkerClickListener(this)
+        //googleMap.setOnMarkerClickListener(this)
 
         googleMap.setOnCameraIdleListener {
             val center = googleMap.cameraPosition.target
@@ -111,13 +78,39 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             Log.d("debug", "search radius: " +  searchRadius.toString())
         }
 
-        googleMap.setOnInfoWindowClickListener { marker ->
+        /*googleMap.setOnInfoWindowClickListener { marker ->
             val id = marker.tag
             Log.d("debug", "marker $id" +  " info Window Clicked")
             val intent = Intent(context, StationInfoActivity::class.java)
             intent.putExtra("id", id.toString())
             Log.d("debug", "launching info for " +  id.toString())
+        }*/
+
+        this.googleMap = googleMap
+        clusterManager = ClusterManager(context, googleMap)
+        val clusterRenderer = ClusterRenderer(requireContext(), googleMap, clusterManager)
+        clusterManager.renderer = clusterRenderer
+        clusterItemClickListener = object : ClusterManager.OnClusterItemClickListener<StationClusterItem> {
+            override fun onClusterItemClick(item: StationClusterItem): Boolean {
+                val id = item.getTag()
+                Log.d("debug", "marker $id" +  " info Window Clicked")
+                val intent = Intent(context, StationInfoActivity::class.java)
+                intent.putExtra("id", id.toString())
+                Log.d("debug", "launching info for " +  id.toString())
+                return false
+            }
         }
+
+        mapReady = true
+
+        googleMap.setOnCameraIdleListener {
+            clusterManager.onCameraIdle()
+            // Your existing code for OnCameraIdleListener
+        }
+
+        googleMap.setOnMarkerClickListener(clusterManager)
+        clusterManager.setOnClusterItemClickListener(clusterItemClickListener)
+
     }
 
     override fun onResume() {
@@ -157,7 +150,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
     private fun loadMarkers(newNearestStations: NearestStations) {
         val defaultMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_default_marker) }
-        val customMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_custom_marker) }
         val inactiveMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_inactive_marker) }
         val privateMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_private_marker) }
         val levelOneMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level1_marker) }
@@ -169,7 +161,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             currIds.add(station.id)
         }
 
-        var marker : Marker?
         for(station in newNearestStations.fuel_stations) {
             if(currIds.contains(station.id)){
                 continue
@@ -217,47 +208,49 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
                 continue
             }
 
-            marker = googleMap.addMarker(MarkerOptions().position(LatLng(station.latitude, station.longitude)).title(station.station_name))
-            marker?.tag = station.id
-            marker?.setIcon(defaultMarker)
-
             var snippetString = ""
 
-
-            if(station.status_code != "E") {
-                marker?.setIcon(inactiveMarker)
-                snippetString += "Status: Inactive"
-            }  else if(station.access_code == "private") {
-                marker?.setIcon(privateMarker)
-                snippetString += "Status: Active"
-                snippetString += "\nAccess: Private"
-                snippetString += "\nLevel: Fast (Level3)"
-            } else if(station.ev_dc_fast_num > 0) {
-                marker?.setIcon(levelThreeMarker)
-                snippetString += "Status: Active"
-                snippetString += "\nAccess: Public"
-                snippetString += "\nLevel: Fast (Level3)"
-            } else if(station.ev_level2_evse_num > 0) {
-                marker?.setIcon(levelTwoMarker)
-                snippetString += "Status: Active"
-                snippetString += "\nAccess: Public"
-                snippetString += "\nLevel: Level 2"
-            } else if(station.ev_level1_evse_num > 0) {
-                marker?.setIcon(levelOneMarker)
-                snippetString += "Status: Active"
-                snippetString += "\nAccess: Public"
-                snippetString += "\nLevel: Level 1"
-            } else {
-                marker?.setIcon(defaultMarker)
-                snippetString += "Details Unknown"
+            val markerIcon = when {
+                station.status_code != "E" -> {
+                    snippetString += "Status: Inactive"
+                    inactiveMarker
+                }
+                station.access_code == "private" -> {
+                    snippetString += "Status: Active\nAccess: Private\nLevel: Fast (Level3)"
+                    privateMarker
+                }
+                station.ev_dc_fast_num > 0 -> {
+                    snippetString += "Status: Active\nAccess: Public\nLevel: Fast (Level3)"
+                    levelThreeMarker
+                }
+                station.ev_level2_evse_num > 0 -> {
+                    snippetString += "Status: Active\nAccess: Public\nLevel: Level 2"
+                    levelTwoMarker
+                }
+                station.ev_level1_evse_num > 0 -> {
+                    snippetString += "Status: Active\nAccess: Public\nLevel: Level 1"
+                    levelOneMarker
+                }
+                else -> {
+                    snippetString += "Details Unknown"
+                    defaultMarker
+                }
             }
 
-            marker?.snippet = snippetString
+            val stationClusterItem = StationClusterItem(
+                LatLng(station.latitude, station.longitude),
+                station.station_name,
+                snippetString,
+                station.id,
+                markerIcon
+            )
+
+            clusterManager.addItem(stationClusterItem)
         }
         Log.d("debug", "loading: " + "markers loaded")
     }
 
-    private fun loadNearestCustomStations() {
+    /*private fun loadNearestCustomStations() {
         val visibleRegion = googleMap.projection.visibleRegion
 
         val northeast = visibleRegion.latLngBounds.northeast
@@ -309,7 +302,77 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             .addOnFailureListener { exception ->
                 // Handle any errors that occur during the query
             }
+    }*/
+
+    private fun loadNearestCustomStations() {
+        val visibleRegion = googleMap.projection.visibleRegion
+
+        val northeast = visibleRegion.latLngBounds.northeast
+        val southwest = visibleRegion.latLngBounds.southwest
+
+        Log.d("debug", "northeast: " + northeast.toString())
+        Log.d("debug", "southwest: " + southwest.toString())
+
+        val northeastLat = northeast.latitude
+        val northeastLng = northeast.longitude
+        val southwestLat = southwest.latitude
+        val southwestLng = southwest.longitude
+
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("CustomStations")
+            .whereGreaterThan("Latitude", southwestLat)
+            .whereLessThan("Latitude", northeastLat)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                loadCustomMarkers(querySnapshot)
+            }
+            .addOnFailureListener { exception ->
+                // Handle any errors that occur during the query
+            }
     }
+
+
+    private fun loadCustomMarkers(querySnapshot: QuerySnapshot) {
+        val customMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_custom_marker) }
+
+        for (document in querySnapshot.documents) {
+            Log.d("debug", document.data.toString())
+            val lng = document.data?.get("Longitude") as Double
+            val lat = document.data?.get("Latitude") as Double
+
+            val visibleRegion = googleMap.projection.visibleRegion
+            val southwestLng = visibleRegion.latLngBounds.southwest.longitude
+            val northeastLng = visibleRegion.latLngBounds.northeast.longitude
+
+            if (lng < southwestLng || lng > northeastLng) {
+                continue
+            }
+
+            val address = document.data?.get("Address").toString()
+            val charger = document.data?.get("Charger").toString()
+            val level = document.data?.get("Level").toString()
+            val rate = document.data?.get("Rate").toString()
+            val owner = document.data?.get("Owner").toString()
+            val id: Long = document.data?.get("id") as Long
+            var snippetString = ""
+            snippetString += "Owner: $owner"
+            snippetString += "\nCharger Type: $charger"
+            snippetString += "\nLevel: $level"
+            snippetString += "\nRate: $$rate"
+
+            val stationClusterItem = StationClusterItem(
+                LatLng(lat, lng),
+                address,
+                snippetString,
+                id.toInt(),
+                customMarker
+            )
+
+            clusterManager.addItem(stationClusterItem)
+        }
+    }
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.d("debug", "MapsFragment: " + "onCreateView")
@@ -334,9 +397,5 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         vectorDrawable.setBounds(0, 0, width, height)
         vectorDrawable.draw(canvas)
         return BitmapDescriptorFactory.fromBitmap(bitmap)
-    }
-
-    override fun onMarkerClick(p0: Marker): Boolean {
-        TODO("Not yet implemented")
     }
 }
