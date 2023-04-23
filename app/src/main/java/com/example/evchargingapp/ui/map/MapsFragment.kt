@@ -56,15 +56,17 @@ import java.util.*
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
+import com.google.maps.android.clustering.ClusterManager
+import com.google.maps.android.clustering.ClusterItem
+
 
 
 class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
-    private lateinit var placesClient: PlacesClient
-    private lateinit var googleMap: GoogleMap
-    private lateinit var refreshButton : ImageButton
-    private lateinit var loadingIcon : ProgressBar
+    private lateinit var clusterManager: ClusterManager<StationClusterItem>
+    private lateinit var clusterItemClickListener: ClusterManager.OnClusterItemClickListener<StationClusterItem>
 
+    private lateinit var googleMap: GoogleMap
     private var mapReady = false
     private var defaultLat = 34.2407
     private var defaultLng = -118.5300
@@ -93,7 +95,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             googleMap.setMapStyle(style)
         }
 
-        loadingIcon = view?.findViewById(R.id.loading)!!
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(setLocation, setZoomLevel))
         loadNearestStations(setLocation, searchRadius)
         loadNearestCustomStations()
@@ -110,62 +111,18 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             Log.d("debug", "search radius: " +  searchRadius.toString())
         }
 
-        refreshButton = view?.findViewById(R.id.refreshButton)!!
-        refreshButton.setOnClickListener {
-            googleMap.clear()
-            loadedStations.clear()
-            addCurrentLocation()
-            loadNearestStations(googleMap.cameraPosition.target, searchRadius)
-        }
-        val filterButton = view?.findViewById<ImageButton>(R.id.filterButton)!!
-        filterButton.setOnClickListener {
-            openFilterActivity()
-        }
-        val favoriteButton = view?.findViewById<ImageButton>(R.id.favoriteButton)!!
-        favoriteButton.setOnClickListener {
-            openFavoriteActivity()
-        }
-
-        placesClient = Places.createClient(context)
-
-        val fields = listOf(Place.Field.ADDRESS, Place.Field.LAT_LNG)
-
-        val searchButton = view?.findViewById<ImageButton>(R.id.searchButton)!!
-        searchButton.setOnClickListener {
-            val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
-                .build(context)
-            searchLauncher.launch(intent)
-
-            //startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE)
-        }
-
-        val currentLocationButton = view?.findViewById<ImageButton>(R.id.currentLocationButton)!!
-        currentLocationButton.setOnClickListener {
-            checkPermissionThenFindCurrentPlace()
-        }
-
         googleMap.setOnInfoWindowClickListener { marker ->
             val id = marker.tag
             Log.d("debug", "marker $id" +  " info Window Clicked")
             val intent = Intent(context, StationInfoActivity::class.java)
             intent.putExtra("id", id.toString())
             Log.d("debug", "launching info for " +  id.toString())
-            stationInfoLauncher.launch(intent)
         }
     }
 
     override fun onResume() {
         super.onResume()
         Log.d("debug", "MapsFragment: " + "onResume")
-    }
-
-    private fun refreshMarkers() {
-        if(mapReady){
-            googleMap.clear()
-            loadedStations.clear()
-            addCurrentLocation()
-            loadNearestStations(googleMap.cameraPosition.target, searchRadius)
-        }
     }
 
     private fun loadNearestStations(location: LatLng, radius: Double) {
@@ -175,7 +132,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()
 
-        loadingIcon.visibility = View.VISIBLE
         Log.d("debug", "loading: " +  "response requested")
         //make API call to client
         client.newCall(request).enqueue(object: Callback {
@@ -298,7 +254,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
             marker?.snippet = snippetString
         }
-        loadingIcon.visibility = View.INVISIBLE
         Log.d("debug", "loading: " + "markers loaded")
     }
 
@@ -356,166 +311,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
             }
     }
 
-    private fun addCurrentLocation() {
-        val locationMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_location_marker) }
-        val marker = googleMap.addMarker(MarkerOptions().position(LatLng(defaultLat, defaultLng)))
-        marker?.setIcon(locationMarker)
-        marker?.tag = "location"
-    }
-
-    override fun onMarkerClick(marker : Marker): Boolean {
-        if(marker.tag == "location"){
-            return true
-        }
-        val id = marker.tag as? Int
-        Log.d("debug", "Marker $id has been clicked on.")
-        marker.showInfoWindow()
-        return true
-    }
-
-    private fun openFilterActivity() {
-        var binaryLevels = ""
-        var binaryConnectors = ""
-        if(levels.contains("ev_level1_evse_num")) {
-            binaryLevels += '1'
-        } else {
-            binaryLevels += '0'
-        }
-        if(levels.contains("ev_level2_evse_num")) {
-            binaryLevels += '1'
-        } else {
-            binaryLevels += '0'
-        }
-        if(levels.contains("ev_dc_fast_num")) {
-            binaryLevels += '1'
-        } else {
-            binaryLevels += '0'
-        }
-
-        if(connectors.contains("J1772")) {
-            binaryConnectors += '1'
-        } else {
-            binaryConnectors += '0'
-        }
-        if(connectors.contains("J1772COMBO")) {
-            binaryConnectors += '1'
-        } else {
-            binaryConnectors += '0'
-        }
-        if(connectors.contains("TESLA")) {
-            binaryConnectors += '1'
-        } else {
-            binaryConnectors += '0'
-        }
-        if(connectors.contains("CHADEMO")) {
-            binaryConnectors += '1'
-        } else {
-            binaryConnectors += '0'
-        }
-        if(connectors.contains("NEMA1450")) {
-            binaryConnectors += '1'
-        } else {
-            binaryConnectors += '0'
-        }
-        if(connectors.contains("NEMA515")) {
-            binaryConnectors += '1'
-        } else {
-            binaryConnectors += '0'
-        }
-        if(connectors.contains("NEMA520")) {
-            binaryConnectors += '1'
-        } else {
-            binaryConnectors += '0'
-        }
-
-        val intent = Intent(context, FilterActivity::class.java)
-        intent.putExtra("levels", binaryLevels)
-        intent.putExtra("connectors", binaryConnectors)
-        intent.putExtra("private", showPrivate)
-        intent.putExtra("inactive", showInactive)
-        intent.putExtra("location", setLocation)
-        intent.putExtra("zoom", setZoomLevel)
-        filterLauncher.launch(intent)
-        activity?.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-    }
-    private var filterLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == 1) {
-            // There are no request codes
-            val data: Intent? = result.data
-            val binaryLevels = data?.getStringExtra("levels")
-            val binaryConnectors = data?.getStringExtra("connectors")
-
-            showPrivate = data?.getBooleanExtra("private", true) == true
-            showInactive = data?.getBooleanExtra("inactive", true) == true
-
-            levels.clear()
-            connectors.clear()
-
-            for(i in 0..2){
-                if(binaryLevels?.get(i)  == '1'){
-                    levels.add(allLevels[i])
-                }
-            }
-            for(i in 0..6) {
-                if (binaryConnectors?.get(i) == '1') {
-                    connectors.add(allConnectors[i])
-                }
-            }
-            refreshMarkers()
-        }
-    }
-
-    private fun openFavoriteActivity() {
-        val intent = Intent(context, FavoriteActivity::class.java)
-        favoriteLauncher.launch(intent)
-        activity?.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-    }
-    private var favoriteLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == 1) {
-            refreshMarkers()
-        }
-    }
-
-    private var searchLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            // There are no request codes
-            val data: Intent? = result.data
-            when (result.resultCode) {
-                Activity.RESULT_OK -> {
-                    data?.let {
-                        val place = Autocomplete.getPlaceFromIntent(data)
-                        Log.d("debug", ContentValues.TAG +  " place: ${place.name}, ${place.id}")
-
-                        googleMap.clear()
-                        loadedStations.clear()
-                        //googleMap.addMarker(MarkerOptions().position(latLng).title(location))
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLng(place.latLng))
-                        //Toast.makeText(requireContext(), address.latitude.toString() + " " + address.longitude, Toast.LENGTH_LONG).show()
-                        refreshMarkers()
-                    }
-                }
-
-                Activity.RESULT_CANCELED -> {
-                    // The user canceled the operation.
-                }
-            }
-        }
-    }
-
-    private var stationInfoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            when (result.resultCode) {
-
-                Activity.RESULT_OK -> {
-
-                }
-                Activity.RESULT_CANCELED -> {
-                    // The user canceled the operation.
-                }
-            }
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.d("debug", "MapsFragment: " + "onCreateView")
         val view = inflater.inflate(R.layout.fragment_maps, container, false)
@@ -530,94 +325,6 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
 
     }
 
-    private fun checkPermissionThenFindCurrentPlace() {
-        when {
-            (ContextCompat.checkSelfPermission(
-                requireContext(),
-                ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
-                requireContext(),
-                ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED) -> {
-                // You can use the API that requires the permission.
-                findCurrentPlace()
-            }
-            else -> {
-                // Ask for both the ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION permissions.
-                ActivityCompat.requestPermissions(
-                    context as Activity,
-                    arrayOf(
-                        android.Manifest.permission.ACCESS_FINE_LOCATION,
-                        android.Manifest.permission.ACCESS_COARSE_LOCATION
-                    ),
-                    PERMISSION_REQUEST_CODE
-                )
-            }
-        }
-    }
-
-    companion object {
-        private const val PERMISSION_REQUEST_CODE = 9
-    }
-
-    @SuppressLint("MissingPermission")
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (requestCode != PERMISSION_REQUEST_CODE) {
-            super.onRequestPermissionsResult(
-                requestCode,
-                permissions,
-                grantResults
-            )
-            return
-        } else if (permissions.toList().zip(grantResults.toList())
-                .firstOrNull { (permission, grantResult) ->
-                    grantResult == PackageManager.PERMISSION_GRANTED && (permission == ACCESS_FINE_LOCATION || permission == ACCESS_COARSE_LOCATION)
-                } != null
-        )
-        // At least one location permission has been granted, so proceed with Find Current Place
-            findCurrentPlace()
-    }
-
-    @RequiresPermission(anyOf = [ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION])
-    private fun findCurrentPlace() {
-        // Use fields to define the data types to return.
-        val placeFields: List<Place.Field> =
-            listOf(Place.Field.NAME, Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG)
-
-        // Use the builder to create a FindCurrentPlaceRequest.
-        val request: FindCurrentPlaceRequest = FindCurrentPlaceRequest.newInstance(placeFields)
-
-        // Call findCurrentPlace and handle the response (first check that the user has granted permission).
-        if (ContextCompat.checkSelfPermission(requireContext(), ACCESS_FINE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(requireContext(), ACCESS_COARSE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            // Retrieve likely places based on the device's current location
-            lifecycleScope.launch {
-                try {
-
-                    val response = placesClient.awaitFindCurrentPlace(placeFields)
-                    googleMap.animateCamera(CameraUpdateFactory.newLatLng(response.placeLikelihoods[0].place.latLng))
-                    defaultLat = response.placeLikelihoods[0].place.latLng.latitude;
-                    defaultLng = response.placeLikelihoods[0].place.latLng.longitude;
-                    setLocation = LatLng(defaultLat, defaultLng)
-                    addCurrentLocation();
-
-
-                } catch (e: Exception) {
-
-                    e.printStackTrace()
-
-                }
-            }
-        } else {
-            Log.d("debug", TAG + ": LOCATION permission not granted")
-            checkPermissionThenFindCurrentPlace()
-
-        }
-    }
-
     private fun bitmapDescriptorFromVector(context : Context, vectorResId : Int): BitmapDescriptor {
         val vectorDrawable : Drawable = ContextCompat.getDrawable(context, vectorResId)!!
         val width = vectorDrawable.intrinsicWidth
@@ -627,5 +334,9 @@ class MapsFragment : Fragment(), GoogleMap.OnMarkerClickListener{
         vectorDrawable.setBounds(0, 0, width, height)
         vectorDrawable.draw(canvas)
         return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
+    override fun onMarkerClick(p0: Marker): Boolean {
+        TODO("Not yet implemented")
     }
 }
