@@ -250,6 +250,64 @@ class MapsFragment : Fragment(){
         Log.d("debug", "loading: " + "markers loaded")
     }
 
+    private fun loadNearestCustomStations() {
+        val visibleRegion = googleMap.projection.visibleRegion
+
+        val northeast = visibleRegion.latLngBounds.northeast
+        val southwest = visibleRegion.latLngBounds.southwest
+
+        val northeastLat = northeast.latitude
+        val northeastLng = northeast.longitude
+        val southwestLat = southwest.latitude
+        val southwestLng = southwest.longitude
+
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("CustomStations")
+            .whereGreaterThan("Latitude", southwestLat)
+            .whereLessThan("Latitude", northeastLat)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val customMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_custom_marker) }
+                for (document in querySnapshot.documents) {
+                    var lng = document.data?.get("Longitude") as Double
+                    var lat = document.data?.get("Latitude") as Double
+
+                    if(lng < southwestLng || lng > northeastLng){
+                        continue;
+                    }
+
+                    var address = document.data?.get("Address").toString()
+                    var charger = document.data?.get("Charger").toString()
+                    var level = document.data?.get("Level").toString()
+                    var rate = document.data?.get("Rate").toString()
+                    var owner = document.data?.get("Owner").toString()
+                    var id : Long = document.data?.get("id") as Long
+                    var snippetString = ""
+                    snippetString += "Owner: $owner"
+                    snippetString += "\nCharger Type: $charger"
+                    snippetString += "\nLevel: $level"
+                    snippetString += "\nRate: $$rate"
+
+                    // Create a StationClusterItem for custom stations
+                    val customStationClusterItem = StationClusterItem(
+                        LatLng(lat, lng),
+                        address.substringBefore(","),
+                        snippetString,
+                        id.toInt(),
+                        customMarker
+                    )
+
+                    // Add customStationClusterItem to the ClusterManager
+                    clusterManager.addItem(customStationClusterItem)
+                }
+            }
+            .addOnFailureListener { exception ->
+                // Handle any errors that occur during the query
+            }
+    }
+
+
     /*private fun loadNearestCustomStations() {
         val visibleRegion = googleMap.projection.visibleRegion
 
@@ -304,7 +362,7 @@ class MapsFragment : Fragment(){
             }
     }*/
 
-    private fun loadNearestCustomStations() {
+    /*private fun loadNearestCustomStations() {
         val visibleRegion = googleMap.projection.visibleRegion
 
         val northeast = visibleRegion.latLngBounds.northeast
@@ -371,7 +429,7 @@ class MapsFragment : Fragment(){
 
             clusterManager.addItem(stationClusterItem)
         }
-    }
+    }*/
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
