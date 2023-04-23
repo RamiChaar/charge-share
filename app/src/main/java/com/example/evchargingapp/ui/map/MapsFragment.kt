@@ -40,9 +40,10 @@ class MapsFragment : Fragment(){
     private var setLocation = LatLng(defaultLat, defaultLng)
     private var setZoomLevel = 13.0f
 
-    private var searchRadius = 70.0
+    private var searchRadius = 4.0
 
     private val loadedStations = mutableListOf<Station>()
+    private val loadedCustomStations = mutableListOf<Int>()
     private val allLevels = mutableListOf("ev_level1_evse_num", "ev_level2_evse_num", "ev_dc_fast_num")
     private val allConnectors = mutableListOf("J1772", "J1772COMBO", "TESLA", "CHADEMO", "NEMA1450", "NEMA515", "NEMA520")
     private var levels = mutableListOf("ev_level1_evse_num", "ev_level2_evse_num", "ev_dc_fast_num")
@@ -55,8 +56,6 @@ class MapsFragment : Fragment(){
         this.googleMap = googleMap
         mapReady = true
 
-        googleMap.setInfoWindowAdapter(context?.let { CustomInfoWindow(it) })
-
         val style = context?.let { MapStyleOptions.loadRawResourceStyle(it, R.raw.map_dark_theme) }
         if (context?.resources?.configuration?.uiMode == 33) {
             googleMap.setMapStyle(style)
@@ -65,7 +64,6 @@ class MapsFragment : Fragment(){
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(setLocation, setZoomLevel))
         loadNearestStations(setLocation, searchRadius)
         loadNearestCustomStations()
-        //googleMap.setOnMarkerClickListener(this)
 
         googleMap.setOnCameraIdleListener {
             val center = googleMap.cameraPosition.target
@@ -76,15 +74,9 @@ class MapsFragment : Fragment(){
 
             Log.d("debug", "camera moved to: " + center.toString())
             Log.d("debug", "search radius: " +  searchRadius.toString())
-        }
 
-        /*googleMap.setOnInfoWindowClickListener { marker ->
-            val id = marker.tag
-            Log.d("debug", "marker $id" +  " info Window Clicked")
-            val intent = Intent(context, StationInfoActivity::class.java)
-            intent.putExtra("id", id.toString())
-            Log.d("debug", "launching info for " +  id.toString())
-        }*/
+            clusterManager.onCameraIdle()
+        }
 
         clusterManager = ClusterManager(context, googleMap)
         val clusterRenderer = ClusterRenderer(requireContext(), googleMap, clusterManager)
@@ -99,13 +91,6 @@ class MapsFragment : Fragment(){
                 return false
             }
         }
-
-        //mapReady = true
-
-        /*googleMap.setOnCameraIdleListener {
-            clusterManager.onCameraIdle()
-            // Your existing code for OnCameraIdleListener
-        }*/
 
         googleMap.setOnMarkerClickListener(clusterManager)
         clusterManager.setOnClusterItemClickListener(clusterItemClickListener)
@@ -246,6 +231,7 @@ class MapsFragment : Fragment(){
 
             clusterManager.addItem(stationClusterItem)
         }
+        //clusterManager.cluster()
         Log.d("debug", "loading: " + "markers loaded")
     }
 
@@ -271,17 +257,19 @@ class MapsFragment : Fragment(){
                 for (document in querySnapshot.documents) {
                     var lng = document.data?.get("Longitude") as Double
                     var lat = document.data?.get("Latitude") as Double
+                    var id : Long = document.data?.get("id") as Long
 
-                    if(lng < southwestLng || lng > northeastLng){
+                    if (lng < southwestLng || lng > northeastLng || loadedCustomStations.contains(id.toInt())) {
                         continue;
                     }
+
+                    loadedCustomStations.add(id.toInt())
 
                     var address = document.data?.get("Address").toString()
                     var charger = document.data?.get("Charger").toString()
                     var level = document.data?.get("Level").toString()
                     var rate = document.data?.get("Rate").toString()
                     var owner = document.data?.get("Owner").toString()
-                    var id : Long = document.data?.get("id") as Long
                     var snippetString = ""
                     snippetString += "Owner: $owner"
                     snippetString += "\nCharger Type: $charger"
@@ -300,11 +288,14 @@ class MapsFragment : Fragment(){
                     // Add customStationClusterItem to the ClusterManager
                     clusterManager.addItem(customStationClusterItem)
                 }
+                // Call cluster() method to update the clusters on the map
+                //clusterManager.cluster()
             }
             .addOnFailureListener { exception ->
                 // Handle any errors that occur during the query
             }
     }
+
 
 
     /*private fun loadNearestCustomStations() {

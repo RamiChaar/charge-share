@@ -2,7 +2,9 @@ package com.example.evchargingapp
 
 import android.content.Context
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.libraries.places.api.model.Place
 import com.google.maps.android.clustering.ClusterManager
 import com.google.maps.android.clustering.view.DefaultClusterRenderer
 
@@ -16,6 +18,10 @@ class ClusterRenderer(
         markerOptions.icon(item.getMarkerIcon())
         markerOptions.snippet(item.snippet)
         markerOptions.title(item.title)
-        super.onBeforeClusterItemRendered(item, markerOptions)
+        //super.onBeforeClusterItemRendered(item, markerOptions)
+    }
+
+    override fun onClusterItemRendered(clusterItem: StationClusterItem, marker: Marker) {
+        marker.tag = clusterItem
     }
 }
