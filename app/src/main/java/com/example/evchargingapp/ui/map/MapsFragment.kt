@@ -86,7 +86,6 @@ class MapsFragment : Fragment(){
             Log.d("debug", "launching info for " +  id.toString())
         }*/
 
-        this.googleMap = googleMap
         clusterManager = ClusterManager(context, googleMap)
         val clusterRenderer = ClusterRenderer(requireContext(), googleMap, clusterManager)
         clusterManager.renderer = clusterRenderer
@@ -101,12 +100,12 @@ class MapsFragment : Fragment(){
             }
         }
 
-        mapReady = true
+        //mapReady = true
 
-        googleMap.setOnCameraIdleListener {
+        /*googleMap.setOnCameraIdleListener {
             clusterManager.onCameraIdle()
             // Your existing code for OnCameraIdleListener
-        }
+        }*/
 
         googleMap.setOnMarkerClickListener(clusterManager)
         clusterManager.setOnClusterItemClickListener(clusterItemClickListener)
