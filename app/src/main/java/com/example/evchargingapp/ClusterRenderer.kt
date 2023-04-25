@@ -15,7 +15,7 @@ class ClusterRenderer(
 ) : DefaultClusterRenderer<StationClusterItem>(context, map, clusterManager) {
 
     override fun onBeforeClusterItemRendered(item: StationClusterItem, markerOptions: MarkerOptions) {
-        markerOptions.icon(item.getMarkerIcon())
+        //markerOptions.icon(item.getMarkerIcon())
         markerOptions.snippet(item.snippet)
         markerOptions.title(item.title)
         //super.onBeforeClusterItemRendered(item, markerOptions)

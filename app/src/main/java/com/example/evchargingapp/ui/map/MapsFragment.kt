@@ -10,6 +10,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.evchargingapp.*
@@ -18,6 +20,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.gson.GsonBuilder
@@ -33,7 +36,11 @@ class MapsFragment : Fragment(){
     private lateinit var clusterManager: ClusterManager<StationClusterItem>
     private lateinit var clusterItemClickListener: ClusterManager.OnClusterItemClickListener<StationClusterItem>
 
+    private lateinit var placesClient: PlacesClient
     private lateinit var googleMap: GoogleMap
+    private lateinit var refreshButton : ImageButton
+    private lateinit var loadingIcon : ProgressBar
+
     private var mapReady = false
     private var defaultLat = 34.2407
     private var defaultLng = -118.5300
@@ -65,6 +72,10 @@ class MapsFragment : Fragment(){
         loadNearestStations(setLocation, searchRadius)
         loadNearestCustomStations()
 
+        clusterManager = ClusterManager(context, googleMap)
+        val clusterRenderer = ClusterRenderer(requireContext(), googleMap, clusterManager)
+        clusterManager.renderer = clusterRenderer
+
         googleMap.setOnCameraIdleListener {
             val center = googleMap.cameraPosition.target
             val zoom = googleMap.cameraPosition.zoom
@@ -78,9 +89,6 @@ class MapsFragment : Fragment(){
             clusterManager.onCameraIdle()
         }
 
-        clusterManager = ClusterManager(context, googleMap)
-        val clusterRenderer = ClusterRenderer(requireContext(), googleMap, clusterManager)
-        clusterManager.renderer = clusterRenderer
         clusterItemClickListener = object : ClusterManager.OnClusterItemClickListener<StationClusterItem> {
             override fun onClusterItemClick(item: StationClusterItem): Boolean {
                 val id = item.getTag()
@@ -94,6 +102,15 @@ class MapsFragment : Fragment(){
 
         googleMap.setOnMarkerClickListener(clusterManager)
         clusterManager.setOnClusterItemClickListener(clusterItemClickListener)
+
+        refreshButton = view?.findViewById(R.id.refreshButton)!!
+        refreshButton.setOnClickListener {
+            googleMap.clear()
+            loadedStations.clear()
+            loadedCustomStations.clear()
+            loadNearestStations(googleMap.cameraPosition.target, searchRadius)
+            loadNearestCustomStations()
+        }
 
     }
 
@@ -284,17 +301,14 @@ class MapsFragment : Fragment(){
                         id.toInt(),
                         customMarker
                     )
-
-                    // Add customStationClusterItem to the ClusterManager
                     clusterManager.addItem(customStationClusterItem)
                 }
-                // Call cluster() method to update the clusters on the map
-                //clusterManager.cluster()
             }
             .addOnFailureListener { exception ->
                 // Handle any errors that occur during the query
             }
     }
+
 
 
 
