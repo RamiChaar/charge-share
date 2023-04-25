@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ReportActivity">
+
+    <TextView
+        android:id="@+id/ReportLabel"
+        android:layout_width="275dp"
+        android:layout_height="54dp"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="45dp"
+        android:layout_marginEnd="75dp"
+        android:gravity="center"
+        android:text="Report Charging Station"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/ReportInputTxt"
+        android:layout_width="275dp"
+        android:layout_height="332dp"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="75dp"
+        android:layout_marginEnd="61dp"
+        android:layout_marginBottom="89dp"
+        android:ems="10"
+        android:gravity="center"
+        android:inputType="textPersonName"
+        android:text="What is the Issue?"
+        app:layout_constraintBottom_toTopOf="@+id/ReportSubmitbutton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ReportLabel" />
+
+    <Button
+        android:id="@+id/ReportSubmitbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="157dp"
+        android:layout_marginEnd="160dp"
+        android:layout_marginBottom="88dp"
+        android:text="Submit"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
