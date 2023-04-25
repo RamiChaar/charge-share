@@ -173,6 +173,7 @@ class MapsFragment : Fragment(){
 
     override fun onResume() {
         super.onResume()
+        refreshMarkers()
         Log.d("debug", "MapsFragment: " + "onResume")
     }
 
