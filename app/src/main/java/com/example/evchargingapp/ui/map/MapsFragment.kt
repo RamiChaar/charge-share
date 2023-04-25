@@ -90,6 +90,8 @@ class MapsFragment : Fragment(){
         val clusterRenderer = ClusterRenderer(requireContext(), googleMap, clusterManager)
         clusterManager.renderer = clusterRenderer
 
+        clusterManager.markerCollection.setInfoWindowAdapter(context?.let { CustomInfoWindow(it) })
+
         loadNearestStations(setLocation, searchRadius)
         loadNearestCustomStations()
 
@@ -106,20 +108,20 @@ class MapsFragment : Fragment(){
             clusterManager.onCameraIdle()
         }
 
-        clusterItemClickListener = object : ClusterManager.OnClusterItemClickListener<StationClusterItem> {
-            override fun onClusterItemClick(item: StationClusterItem): Boolean {
+        val clusterItemInfoWindowClickListener = object : ClusterManager.OnClusterItemInfoWindowClickListener<StationClusterItem> {
+            override fun onClusterItemInfoWindowClick(item: StationClusterItem) {
                 val id = item.getTag()
-                Log.d("debug", "marker $id" +  " info Window Clicked")
+                Log.d("debug", "marker $id" + " info Window Clicked")
                 val intent = Intent(context, StationInfoActivity::class.java)
                 intent.putExtra("id", id.toString())
-                Log.d("debug", "launching info for " +  id.toString())
+                Log.d("debug", "launching info for " + id.toString())
                 stationInfoLauncher.launch(intent)
-                return false
             }
         }
 
         googleMap.setOnMarkerClickListener(clusterManager)
-        clusterManager.setOnClusterItemClickListener(clusterItemClickListener)
+        clusterManager.setOnClusterItemInfoWindowClickListener(clusterItemInfoWindowClickListener)
+
 
         refreshButton = view?.findViewById(R.id.refreshButton)!!
         refreshButton.setOnClickListener {
@@ -157,8 +159,6 @@ class MapsFragment : Fragment(){
         currentLocationButton.setOnClickListener {
             checkPermissionThenFindCurrentPlace()
         }
-
-
     }
 
     override fun onResume() {

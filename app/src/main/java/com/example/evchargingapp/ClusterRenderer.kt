@@ -27,6 +27,6 @@ class ClusterRenderer(
     }
 
     override fun shouldRenderAsCluster(cluster: Cluster<StationClusterItem>): Boolean {
-        return cluster.size >= 2
+        return cluster.size >= 5
     }
 }
