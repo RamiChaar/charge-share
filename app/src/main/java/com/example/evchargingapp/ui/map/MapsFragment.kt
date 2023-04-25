@@ -21,6 +21,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.alpha
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.evchargingapp.*
@@ -96,7 +97,15 @@ class MapsFragment : Fragment(){
         loadNearestStations(setLocation, searchRadius)
         loadNearestCustomStations()
 
+        /*googleMap.setOnCameraMoveStartedListener {
+            clusterManager.markerCollection.markers.forEach { it.alpha = 0.3f }
+            clusterManager.clusterMarkerCollection.markers.forEach { it.alpha = 0.3f }
+        }*/
+
         googleMap.setOnCameraIdleListener {
+            //clusterManager.markerCollection.markers.forEach { it.alpha = 1.0f }
+            //`clusterManager.clusterMarkerCollection.markers.forEach { it.alpha = 1.0f }
+
             val center = googleMap.cameraPosition.target
             val zoom = googleMap.cameraPosition.zoom
             searchRadius = min(16.0, 2.0.pow((14.5 - zoom)))
