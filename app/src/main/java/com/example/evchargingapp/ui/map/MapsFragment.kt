@@ -50,7 +50,7 @@ import kotlin.math.pow
 class MapsFragment : Fragment(){
 
     private lateinit var clusterManager: ClusterManager<StationClusterItem>
-    private lateinit var clusterItemClickListener: ClusterManager.OnClusterItemClickListener<StationClusterItem>
+    private lateinit var clusterItemInfoWindowClickListener: ClusterManager.OnClusterItemInfoWindowClickListener<StationClusterItem>
 
     private lateinit var placesClient: PlacesClient
     private lateinit var googleMap: GoogleMap
@@ -84,6 +84,7 @@ class MapsFragment : Fragment(){
             googleMap.setMapStyle(style)
         }
 
+        loadingIcon = view?.findViewById(R.id.loading)!!
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(setLocation, setZoomLevel))
 
         clusterManager = ClusterManager(context, googleMap)
@@ -108,7 +109,7 @@ class MapsFragment : Fragment(){
             clusterManager.onCameraIdle()
         }
 
-        val clusterItemInfoWindowClickListener = object : ClusterManager.OnClusterItemInfoWindowClickListener<StationClusterItem> {
+        clusterItemInfoWindowClickListener = object : ClusterManager.OnClusterItemInfoWindowClickListener<StationClusterItem> {
             override fun onClusterItemInfoWindowClick(item: StationClusterItem) {
                 val id = item.getTag()
                 Log.d("debug", "marker $id" + " info Window Clicked")
@@ -185,6 +186,7 @@ class MapsFragment : Fragment(){
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()
 
+        loadingIcon.visibility = View.VISIBLE
         Log.d("debug", "loading: " +  "response requested")
         //make API call to client
         client.newCall(request).enqueue(object: Callback {
@@ -310,6 +312,7 @@ class MapsFragment : Fragment(){
             clusterManager.addItem(stationClusterItem)
         }
         clusterManager.cluster()
+        loadingIcon.visibility = View.INVISIBLE
         Log.d("debug", "loading: " + "markers loaded")
     }
 
