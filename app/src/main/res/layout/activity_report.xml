@@ -24,18 +24,18 @@
         android:id="@+id/ReportInputTxt"
         android:layout_width="275dp"
         android:layout_height="332dp"
-        android:layout_marginStart="75dp"
-        android:layout_marginTop="75dp"
-        android:layout_marginEnd="61dp"
-        android:layout_marginBottom="89dp"
+        android:layout_marginStart="68dp"
+        android:layout_marginTop="51dp"
+        android:layout_marginEnd="68dp"
+        android:layout_marginBottom="51dp"
         android:ems="10"
         android:gravity="center"
+        android:hint="Type Here"
         android:inputType="textPersonName"
-        android:text="What is the Issue?"
         app:layout_constraintBottom_toTopOf="@+id/ReportSubmitbutton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ReportLabel" />
+        app:layout_constraintTop_toBottomOf="@+id/whatIssueLabel" />
 
     <Button
         android:id="@+id/ReportSubmitbutton"
@@ -43,9 +43,25 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="157dp"
         android:layout_marginEnd="160dp"
-        android:layout_marginBottom="88dp"
+        android:layout_marginBottom="64dp"
         android:text="Submit"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/whatIssueLabel"
+        android:layout_width="145dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="133dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="133dp"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:text="What is the issue?"
+        app:layout_constraintBottom_toTopOf="@+id/ReportInputTxt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ReportLabel" />
 </androidx.constraintlayout.widget.ConstraintLayout>

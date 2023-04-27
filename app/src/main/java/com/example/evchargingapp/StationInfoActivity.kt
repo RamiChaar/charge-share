@@ -9,6 +9,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.gson.GsonBuilder
@@ -123,13 +124,19 @@ class StationInfoActivity : AppCompatActivity() {
 
         val reportButton = findViewById<ImageButton>(R.id.reportButton)
         reportButton.setOnClickListener {
-            //to implement - report button
+            val intent = Intent(this, ReportActivity::class.java)
+            reportLauncher.launch(intent)
         }
 
         if (id != null && id.length < 7) {
             getStation(id)
         } else if (id != null){
             queryCustomStation(id);
+        }
+    }
+
+    private var reportLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == 1) {
         }
     }
 
