@@ -17,8 +17,10 @@ import com.example.evchargingapp.AddCustomStation
 import com.example.evchargingapp.LoginActivity
 import com.example.evchargingapp.R
 import com.example.evchargingapp.rentHomeCharging
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
-
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 
 class ProfileFragment : Fragment() {
 
@@ -27,7 +29,7 @@ class ProfileFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_profile, container, false)
-        usernameText = view.findViewById<TextView>(R.id.UsernameText)
+        usernameText = view.findViewById(R.id.UsernameText)
         val rentMyChargerButton = view.findViewById<Button>(R.id.RentMyChargerButton)
         val logOutButton = view.findViewById<Button>(R.id.LogOutButton)
 
@@ -65,6 +67,9 @@ class ProfileFragment : Fragment() {
             if (username != null && password != null) {
                 storeLoginCredentials(username, password)
             }
+        } else if (result.resultCode == 2) {
+            val navController = findNavController()
+            navController.navigate(R.id.navigation_map)
         }
     }
 
@@ -77,6 +82,18 @@ class ProfileFragment : Fragment() {
 
     private fun clearLoginCredentials(){
         sp.edit().clear().apply();
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val username = sp.getString("username", "")
+        val password = sp.getString("password", "")
+        if((username == "" || password == "")){
+            val intent = Intent(context, LoginActivity::class.java)
+            resultLauncher.launch(intent)
+        } else {
+            usernameText.text = username;
+        }
     }
 
 }

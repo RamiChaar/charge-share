@@ -31,7 +31,7 @@
         android:drawablePadding="10dp"
         android:ems="10"
         android:hint="Password"
-        android:inputType="textPersonName"
+        android:inputType="textPassword"
         android:minHeight="48dp"
         android:paddingLeft="20dp"
         android:paddingTop="10dp"
@@ -119,32 +119,16 @@
             android:textColor="@color/design_default_color_error" />
     </LinearLayout>
 
-    <LinearLayout
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/login_nav_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:textAlignment="center"
-        app:layout_constraintEnd_toEndOf="@+id/btnlogin"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/btnlogin"
-        app:layout_constraintTop_toBottomOf="@+id/btnlogin">
-
-    <TextView
-        android:id="@+id/TextView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="or"
-        android:textColor="@color/black" />
-
-    <TextView
-        android:id="@+id/guestButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Continue As Guest"
-        android:textColor="@color/design_default_color_error" />
-    </LinearLayout>
-
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="0dp"
+        android:background="?android:attr/windowBackground"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
