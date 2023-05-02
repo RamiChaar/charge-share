@@ -23,12 +23,11 @@ class RegisterActivity : AppCompatActivity() {
         firebaseAuth = FirebaseAuth.getInstance()
 
         binding.btnRegister.setOnClickListener {
-            val username = binding.inputPass.text.toString()
             val email = binding.inputEmail.text.toString()
             val pass = binding.inputPassword.text.toString()
             val confirmPass = binding.inputConfirmPassword.text.toString()
 
-            if (username.isNotEmpty() && email.isNotEmpty() && pass.isNotEmpty() && confirmPass.isNotEmpty()) {
+            if (email.isNotEmpty() && pass.isNotEmpty() && confirmPass.isNotEmpty()) {
                 if (pass == confirmPass) {
 
                     firebaseAuth.createUserWithEmailAndPassword(email , pass).addOnCompleteListener{
