@@ -32,13 +32,13 @@
         android:gravity="center"
         android:hint="Type Here"
         android:inputType="textPersonName"
-        app:layout_constraintBottom_toTopOf="@+id/ReportSubmitbutton"
+        app:layout_constraintBottom_toTopOf="@+id/ReportSubmitButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/whatIssueLabel" />
 
     <Button
-        android:id="@+id/ReportSubmitbutton"
+        android:id="@+id/ReportSubmitButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="157dp"

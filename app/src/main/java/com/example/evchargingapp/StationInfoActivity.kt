@@ -124,7 +124,11 @@ class StationInfoActivity : AppCompatActivity() {
 
         val reportButton = findViewById<ImageButton>(R.id.reportButton)
         reportButton.setOnClickListener {
+            if(currentUser == null) {
+                return@setOnClickListener
+            }
             val intent = Intent(this, ReportActivity::class.java)
+            intent.putExtra("id", id)
             reportLauncher.launch(intent)
         }
 

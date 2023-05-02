@@ -37,6 +37,7 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.ktx.api.net.awaitFindCurrentPlace
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.gson.GsonBuilder
@@ -227,6 +228,7 @@ class MapsFragment : Fragment(){
         val levelOneMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level1_marker) }
         val levelTwoMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level2_marker) }
         val levelThreeMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_level3_marker) }
+        val reportedMarker = context?.let { bitmapDescriptorFromVector(it, R.drawable.ic_resource_reported_marker) }
 
         val currIds = mutableListOf<Int>()
         loadedStations.forEach { station ->
@@ -282,7 +284,7 @@ class MapsFragment : Fragment(){
 
             var snippetString = ""
 
-            val markerIcon = when {
+            var markerIcon = when {
                 station.status_code != "E" -> {
                     snippetString += "Status: Inactive"
                     inactiveMarker
@@ -321,9 +323,34 @@ class MapsFragment : Fragment(){
 
             clusterManager.addItem(stationClusterItem)
         }
+
         clusterManager.cluster()
         loadingIcon.visibility = View.INVISIBLE
         Log.d("debug", "loading: " + "markers loaded")
+    }
+
+    private fun isMarkerReported(id : String) {
+        val db = FirebaseFirestore.getInstance()
+        val collectionRef = db.collection("StationReports")
+        val query = collectionRef.whereEqualTo("stationId", id)
+
+        var isReported = false
+        query.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val querySnapshot = task.result
+                if (querySnapshot?.isEmpty == true) {
+
+                } else {
+                    // The query returned one or more results.
+                    Log.d("TAG", "Query has ${querySnapshot?.size()} results")
+                }
+            } else {
+                // An error occurred while executing the query.
+                Log.w("TAG", "Error getting documents.", task.exception)
+            }
+        }
+
+
     }
 
     private fun loadNearestCustomStations() {
