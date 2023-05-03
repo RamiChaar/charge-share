@@ -43,6 +43,7 @@ import com.google.firebase.firestore.QuerySnapshot
 import com.google.gson.GsonBuilder
 import com.google.maps.android.clustering.ClusterManager
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import okhttp3.*
 import java.io.IOException
 import kotlin.math.min
@@ -235,98 +236,118 @@ class MapsFragment : Fragment(){
             currIds.add(station.id)
         }
 
-        for(station in newNearestStations.fuel_stations) {
-            if(currIds.contains(station.id)){
-                continue
-            }
-            loadedStations.add(station)
+        val reportedIds = mutableListOf<String>()
 
-            var hasOneLevel = false
-            var hasOneConnector = false
-            val levelsInStation = mutableListOf("")
-            if(station.ev_level1_evse_num > 0){
-                levelsInStation.add("ev_level1_evse_num")
-            }
-            if(station.ev_level2_evse_num > 0){
-                levelsInStation.add("ev_level2_evse_num")
-            }
-            if(station.ev_dc_fast_num > 0){
-                levelsInStation.add("ev_dc_fast_num")
-            }
-
-            for(level in levelsInStation){
-                if(levels.contains(level)) {
-                    hasOneLevel = true
-                }
-            }
-
-            if(station.ev_connector_types == null) {
-                hasOneConnector = true
-            } else {
-                for (connector in station.ev_connector_types) {
-                    if (connectors.contains(connector)) {
-                        hasOneConnector = true
+        val collectionRef = FirebaseFirestore.getInstance().collection("StationReports")
+        collectionRef.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                for (document in task.result.documents) {
+                    val stationId = document.getString("stationId")
+                    if (stationId != null) {
+                        reportedIds.add(stationId)
                     }
                 }
+
+                for(station in newNearestStations.fuel_stations) {
+                    if(currIds.contains(station.id)){
+                        continue
+                    }
+                    loadedStations.add(station)
+
+                    var hasOneLevel = false
+                    var hasOneConnector = false
+                    val levelsInStation = mutableListOf("")
+                    if(station.ev_level1_evse_num > 0){
+                        levelsInStation.add("ev_level1_evse_num")
+                    }
+                    if(station.ev_level2_evse_num > 0){
+                        levelsInStation.add("ev_level2_evse_num")
+                    }
+                    if(station.ev_dc_fast_num > 0){
+                        levelsInStation.add("ev_dc_fast_num")
+                    }
+
+                    for(level in levelsInStation){
+                        if(levels.contains(level)) {
+                            hasOneLevel = true
+                        }
+                    }
+
+                    if(station.ev_connector_types == null) {
+                        hasOneConnector = true
+                    } else {
+                        for (connector in station.ev_connector_types) {
+                            if (connectors.contains(connector)) {
+                                hasOneConnector = true
+                            }
+                        }
+                    }
+
+                    if(!hasOneLevel || !hasOneConnector){
+                        continue
+                    }
+
+                    if(!showPrivate && station.access_code == "private"){
+                        continue
+                    }
+
+                    if(!showInactive && station.status_code != "E"){
+                        continue
+                    }
+
+                    var snippetString = ""
+
+                    var markerIcon = when {
+                        station.status_code != "E" -> {
+                            snippetString += "Status: Inactive"
+                            inactiveMarker
+                        }
+                        station.access_code == "private" -> {
+                            snippetString += "Status: Active\nAccess: Private\nLevel: Fast (Level3)"
+                            privateMarker
+                        }
+                        station.ev_dc_fast_num > 0 -> {
+                            snippetString += "Status: Active\nAccess: Public\nLevel: Fast (Level3)"
+                            levelThreeMarker
+                        }
+                        station.ev_level2_evse_num > 0 -> {
+                            snippetString += "Status: Active\nAccess: Public\nLevel: Level 2"
+                            levelTwoMarker
+                        }
+                        station.ev_level1_evse_num > 0 -> {
+                            snippetString += "Status: Active\nAccess: Public\nLevel: Level 1"
+                            levelOneMarker
+                        }
+                        else -> {
+                            snippetString += "Details Unknown"
+                            defaultMarker
+                        }
+                    }
+
+                    if(reportedIds.contains(station.id.toString())) {
+                        markerIcon = reportedMarker;
+                    }
+
+                    val stationClusterItem = StationClusterItem(
+                        LatLng(station.latitude, station.longitude),
+                        station.station_name,
+                        snippetString,
+                        station.id,
+                        markerIcon
+                    )
+
+                    Log.d("debug", "Adding station to cluster manager (Lat, Lng): (${station.latitude}, ${station.longitude})")
+
+                    clusterManager.addItem(stationClusterItem)
+                }
+
+                clusterManager.cluster()
+                loadingIcon.visibility = View.INVISIBLE
+                Log.d("debug", "loading: " + "markers loaded")
+            } else {
+                Log.w("TAG", "Error getting documents.", task.exception)
             }
-
-            if(!hasOneLevel || !hasOneConnector){
-                continue
-            }
-
-            if(!showPrivate && station.access_code == "private"){
-                continue
-            }
-
-            if(!showInactive && station.status_code != "E"){
-                continue
-            }
-
-            var snippetString = ""
-
-            var markerIcon = when {
-                station.status_code != "E" -> {
-                    snippetString += "Status: Inactive"
-                    inactiveMarker
-                }
-                station.access_code == "private" -> {
-                    snippetString += "Status: Active\nAccess: Private\nLevel: Fast (Level3)"
-                    privateMarker
-                }
-                station.ev_dc_fast_num > 0 -> {
-                    snippetString += "Status: Active\nAccess: Public\nLevel: Fast (Level3)"
-                    levelThreeMarker
-                }
-                station.ev_level2_evse_num > 0 -> {
-                    snippetString += "Status: Active\nAccess: Public\nLevel: Level 2"
-                    levelTwoMarker
-                }
-                station.ev_level1_evse_num > 0 -> {
-                    snippetString += "Status: Active\nAccess: Public\nLevel: Level 1"
-                    levelOneMarker
-                }
-                else -> {
-                    snippetString += "Details Unknown"
-                    defaultMarker
-                }
-            }
-
-            val stationClusterItem = StationClusterItem(
-                LatLng(station.latitude, station.longitude),
-                station.station_name,
-                snippetString,
-                station.id,
-                markerIcon
-            )
-
-            Log.d("debug", "Adding station to cluster manager (Lat, Lng): (${station.latitude}, ${station.longitude})")
-
-            clusterManager.addItem(stationClusterItem)
         }
-
-        clusterManager.cluster()
-        loadingIcon.visibility = View.INVISIBLE
-        Log.d("debug", "loading: " + "markers loaded")
     }
 
     private fun isMarkerReported(id : String) {
@@ -349,8 +370,6 @@ class MapsFragment : Fragment(){
                 Log.w("TAG", "Error getting documents.", task.exception)
             }
         }
-
-
     }
 
     private fun loadNearestCustomStations() {
